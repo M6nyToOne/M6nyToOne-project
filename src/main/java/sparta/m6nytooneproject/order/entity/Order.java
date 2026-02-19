@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
 import sparta.m6nytooneproject.product.entity.Product;
+import sparta.m6nytooneproject.user.entity.User;
 
 @Entity
 @Table(name = "orders")
@@ -41,6 +42,10 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     public void cancelOrder(String reason) {
         this.status = OrderStatus.CANCELLED;
         this.cancelReason = reason;
@@ -54,12 +59,13 @@ public class Order extends BaseEntity {
         this.status = orderStatus;
     }
 
-    public Order(int productPrice, int quantity, OrderStatus status, String productName , String userName, Product product) {
+    public Order(int productPrice, int quantity, OrderStatus status, String productName , String userName, Product product , User user) {
         this.productPrice = productPrice;
         this.quantity = quantity;
         this.status = status;
         this.productName = productName;
         this.userName = userName;
         this.product = product;
+        this.user = user;
     }
 }

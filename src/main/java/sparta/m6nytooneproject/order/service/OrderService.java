@@ -13,12 +13,15 @@ import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
+import sparta.m6nytooneproject.user.entity.User;
+import sparta.m6nytooneproject.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
@@ -30,7 +33,10 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public void checkValidateUser(String username) {
+    public User checkValidateUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () ->  new RuntimeException("User not found")
+        );
         // 했다치고
     }
 
@@ -38,7 +44,7 @@ public class OrderService {
 
     @Transactional
     public OrderResponseDto createOrder(OrderRequest orderRequest) {
-        checkValidateUser(orderRequest.getUserName());
+        User user = checkValidateUser(orderRequest.getUserId());
         Product product = checkProductStock(orderRequest.getProductId(),orderRequest.getQuantity());
 
         Order order = new Order(
@@ -46,8 +52,9 @@ public class OrderService {
                 orderRequest.getQuantity(),
                 OrderStatus.PREPARED,
                 product.getProductName(),
-                orderRequest.getUserName(),
-                product
+                user.getUsername(),
+                product,
+                user
         );
 
         orderRepository.save(order);
@@ -62,8 +69,6 @@ public class OrderService {
                 product.getPrice() * orderRequest.getQuantity()
         );
     }
-
-
 
     @Transactional
     public void cancelOrder(Long orderId , String cancelReason) {
