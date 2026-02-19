@@ -6,5 +6,5 @@ import lombok.Getter;
 public class OrderRequest {
     private int quantity;
     private Long productId;
-    private String userName;
+    private Long userId;
 }
