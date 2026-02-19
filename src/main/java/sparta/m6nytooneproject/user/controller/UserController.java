@@ -11,4 +11,6 @@ import sparta.m6nytooneproject.user.service.UserService;
 public class UserController {
 
     private final UserService userService;
+
+
 }

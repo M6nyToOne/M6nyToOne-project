@@ -17,7 +17,7 @@ public class User extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String username;
+    private String userName;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -28,13 +28,15 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String phoneNumber;
 
-//    private UserRole role;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
 
-    public User(String username, String email, String password, String phoneNumber) {
-        this.username = username;
+    public User(String userName, String email, String password, String phoneNumber, UserRole userRole) {
+        this.userName = userName;
         this.email = email;
         this.password = password;
         this.phoneNumber = phoneNumber;
+        this.role = userRole;
     }
 }
