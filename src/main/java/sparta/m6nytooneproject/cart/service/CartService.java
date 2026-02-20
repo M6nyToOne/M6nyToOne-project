@@ -42,7 +42,7 @@ public class CartService {
         //1-1. 고객 상태 체크 로직추가
         SignupStatus userStatus = user.getSignupStatus();
         if(!user.getSignupStatus().equals(userStatus.ACTIVE)){
-            throw new IllegalStateException("현재 유저가 활성 상태가 아닙니다.(상태: " + user.getSignupStatus() + ")");
+            throw new IllegalStateException("현재 유저가 활성 상태가 아닙니다.");
         }
 
         // 2. 존재하는 상품인지 확인
@@ -52,7 +52,7 @@ public class CartService {
         // 2-1. 판매 중인 상품인지 확인 (품절, 단종 체크)
         Status productStatus = product.getStatus();//존재하는 상품의 상태 확인
         if (!product.getStatus().equals(productStatus.ON_SALE)) {//상품상태 enum으로 생성되었는지 확인
-            throw new IllegalStateException("현재 판매 중인 상품이 아닙니다. (상태: " + product.getStatus() + ")");
+            throw new IllegalStateException("현재 판매 중인 상품이 아닙니다.");
         }
 
         // 3. 기존 장바구니에 동일 상품이 있는지 확인
