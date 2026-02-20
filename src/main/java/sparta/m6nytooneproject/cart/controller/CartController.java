@@ -13,6 +13,7 @@ import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.cart.repository.CartRepository;
+import sparta.m6nytooneproject.cart.service.CartService;
 
 @RestController
 @RequestMapping("/carts")//공통경로
@@ -20,11 +21,11 @@ import sparta.m6nytooneproject.cart.repository.CartRepository;
 @Validated
 public class CartController {
 
-    private final CartRepository cartRepository;
+    private final CartService cartService;
 
     @PostMapping
     public ResponseEntity<CartResponseDto> createCart(@Valid @RequestBody CartRequestDto request) {
-        CartResponseDto response = cartService.addCart(request);
+        CartResponseDto response = cartService.createCart(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
     /*
