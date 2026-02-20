@@ -37,16 +37,38 @@ public class ProductService {
 
     public Page<ProductResponseDto> getAllProducts(Pageable pageable, String productName, Category category, Status status) {
 
-        Page<Product> products;
         if (productName != null && category == null && status == null) {
             // 검색 키워드 상품명 조회
-            products = productRepository.findByProductNameContaining(pageable, productName);
-        } else if () {
-            products = productRepository.findAll(pageable);
+            return productRepository.findByProductNameContaining(productName, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName == null && category != null && status == null) {
+            // 카테고리 필터
+            return productRepository.findByCategory(category, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName == null && category == null && status != null) {
+            // 상품상태 필터
+            return productRepository.findByStatus(status, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName != null && category != null && status == null) {
+            // 검색 키워드 상품명 조회와 카테고리 필터
+            return productRepository.findByProductNameAndCategory(productName, category, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName != null && category == null && status != null) {
+            // 검색 키워드 상품명 조회와 상품상태 필터
+            return productRepository.findByProductNameAndStatus(productName, status, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName == null && category != null && status != null) {
+            // 카테고리 필터와 상품상태 필터
+            return productRepository.findByCategoryAndStatus(category, status, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName != null && category != null && status != null) {
+            // 검색 키워드 상품명 조회와 카테고리 필터와 상품상태 필터
+            return productRepository.findByProductNameAndCategoryAndStatus(productName, category, status, pageable)
+                    .map(ProductResponseDto::new);
         }
-
-        return products.map(product -> new ProductResponseDto(product)
-        );
+        // 전체 조회
+        return productRepository.findAll(pageable)
+                .map(ProductResponseDto::new);
     }
 
     public GetOneProductResponseDto getOneProduct(Long productId) {
