@@ -24,6 +24,7 @@ public class Product extends BaseEntity {
     private String productName;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Category category;
 
     @Column(nullable = false)
