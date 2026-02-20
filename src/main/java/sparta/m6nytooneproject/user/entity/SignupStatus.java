@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum LoginStatus {
+public enum SignupStatus {
 
     ACTIVE("STATUS_ACTIVE", "활성"),
     INACTIVE("STATUS_INACTIVE", "비활성"),

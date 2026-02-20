@@ -57,10 +57,12 @@ public class UserController {
 
     // 로그인
     @PostMapping("/login")
-    public void login(
+    public ResponseEntity<Void> login(
             @Valid @RequestBody LoginRequest request,
             HttpSession session
     ) {
-        SessionUser sessionUser = userService.login(request, session);
+        SessionUser sessionUser = userService.login(request);
+        session.setAttribute("login_user", sessionUser);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

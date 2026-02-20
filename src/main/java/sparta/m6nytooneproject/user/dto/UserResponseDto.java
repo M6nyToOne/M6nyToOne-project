@@ -1,7 +1,7 @@
 package sparta.m6nytooneproject.user.dto;
 
 import lombok.Getter;
-import sparta.m6nytooneproject.user.entity.LoginStatus;
+import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
 
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ public class UserResponseDto {
     private final String userName;
     private final String email;
     private final String phoneNumber;
-    private final LoginStatus loginStatus;
+    private final SignupStatus signupStatus;
     private final LocalDateTime createdAt;
     private final LocalDateTime modifiedAt;
 
@@ -22,7 +22,7 @@ public class UserResponseDto {
         this.userName = user.getUserName();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
-        this.loginStatus = user.getLoginStatus();
+        this.signupStatus = user.getSignupStatus();
         this.createdAt = user.getCreatedAt();
         this.modifiedAt = user.getModifiedAt();
     }

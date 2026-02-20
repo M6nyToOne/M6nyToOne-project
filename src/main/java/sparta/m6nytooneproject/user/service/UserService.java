@@ -1,7 +1,6 @@
 package sparta.m6nytooneproject.user.service;
 
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +14,7 @@ import sparta.m6nytooneproject.user.dto.UpdateUserRequestDto;
 import sparta.m6nytooneproject.user.dto.UpdateUserResponseDto;
 import sparta.m6nytooneproject.user.dto.UserRequestDto;
 import sparta.m6nytooneproject.user.dto.UserResponseDto;
-import sparta.m6nytooneproject.user.entity.LoginStatus;
+import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.entity.UserRole;
 import sparta.m6nytooneproject.user.repository.UserRepository;
@@ -57,7 +56,7 @@ public class UserService {
         }
         // 승인 대기
         User savedUser = userRepository.save(user);
-        savedUser.setLoginStatus(LoginStatus.PENDING);
+        savedUser.setSignupStatus(SignupStatus.PENDING);
         return new UserResponseDto(savedUser);
 
         // 슈퍼 관리자가 승인해야 됨.
@@ -79,16 +78,16 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("존재하지 않는 유저입니다.")
         );
-        user.updateLoginStatus(requestDto.getLoginStatus());
+        user.updateLoginStatus(requestDto.getSignupStatus());
         return new UpdateUserResponseDto(user);
     }
 
     // 로그인
-    public SessionUser login(LoginRequest request, HttpSession session) {
+    public SessionUser login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
                 () -> new IllegalStateException("이미 로그인되어있는 유저입니다.")
         );
-        if (!user.getLoginStatus().equals(LoginStatus.ACTIVE)) {
+        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
             throw new IllegalStateException("활성화되지 않는 유저입니다.");
         }
         return new SessionUser(user);
