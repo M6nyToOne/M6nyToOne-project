@@ -87,7 +87,7 @@ public class CartService {
 
         SignupStatus userStatus = user.getSignupStatus();
         if(!user.getSignupStatus().equals(userStatus.ACTIVE)){
-            throw new IllegalStateException("현재 유저가 활성 상태가 아닙니다.(상태: " + user.getSignupStatus() + ")");
+            throw new IllegalStateException("현재 유저가 활성 상태가 아닙니다.");
         }
 
         return cartPage.stream().map(CartResponseDto::new).toList();
