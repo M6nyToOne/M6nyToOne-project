@@ -49,4 +49,28 @@ public class Product extends BaseEntity {
         this.status = status;
         this.user = user;
     }
+
+    public void updateProduct(String productName, Category category, int price) {
+        this.productName = productName;
+        this.category = category;
+        this.price = price;
+    }
+
+    public void updateProductStock(int stock) {
+        this.stock = stock;
+    }
+
+    public void updateProductStockAndStatus(int stock) {
+        if (this.stock <= 0) {
+            this.stock = 0;
+            this.status = Status.SOLD_OUT;
+        } else {
+            this.stock = stock;
+            this.status = Status.ON_SALE;
+        }
+    }
+
+    public void updateProductStatus(Status status) {
+        this.status = status;
+    }
 }
