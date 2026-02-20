@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
@@ -25,8 +24,11 @@ public class CartController {
 
     //장바구니 생성
     @PostMapping
-    public ResponseEntity<CartResponseDto> createCart(@Valid @RequestBody CartRequestDto request) {
-        CartResponseDto result = cartService.createCart(request);
+    public ResponseEntity<CartResponseDto> createCart(
+            @Valid @RequestBody CartRequestDto request,
+            @SessionAttribute(name= "login_user", required = false) SessionUser loginUser
+    ) {
+        CartResponseDto result = cartService.createCart(request,loginUser );
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

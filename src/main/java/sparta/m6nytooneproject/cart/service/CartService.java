@@ -13,6 +13,7 @@ import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.cart.repository.CartRepository;
+import sparta.m6nytooneproject.global.dto.SessionUser;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.enums.Status;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
@@ -33,10 +34,10 @@ public class CartService {
     private final ProductRepository productRepository; //상품 확인용
 
     //장바구니 생성
-    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request) {
+    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request, SessionUser loginUser) {
 
         // 1. 고객 존재 여부 확인
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 고객입니다."));
 
         //1-1. 고객 상태 체크 로직추가
@@ -63,7 +64,7 @@ public class CartService {
             cart.updateQuantity(cart.getQuantity() + request.getQuantity());
         }
             // 4. 다른 상품인 경우 새로운 장바구니 생성
-            cart = new Cart(request.getId(), request.getQuantity(), user, product);
+            cart = new Cart(user.getId(), request.getQuantity(), user, product);
         Cart savedCart = cartRepository.save(cart);
 
         return new CartResponseDto(savedCart);
