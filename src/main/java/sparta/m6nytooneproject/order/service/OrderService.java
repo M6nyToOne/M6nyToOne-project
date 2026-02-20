@@ -52,7 +52,7 @@ public class OrderService {
                 orderRequest.getQuantity(),
                 OrderStatus.PREPARED,
                 product.getProductName(),
-                user.getUsername(),
+                user.getUserName(),
                 product,
                 user
         );
