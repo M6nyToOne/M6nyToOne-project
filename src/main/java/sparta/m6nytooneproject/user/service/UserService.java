@@ -1,6 +1,5 @@
 package sparta.m6nytooneproject.user.service;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +41,7 @@ public class UserService {
         }
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
         User user = new User(
                 requestDto.getName(),
                 requestDto.getEmail(),
@@ -49,16 +49,13 @@ public class UserService {
                 requestDto.getPhoneNumber(),
                 requestDto.getUserRole()
         );
-        // 고객이면 회원가입 바로 시켜주기
+        User savedUser = userRepository.save(user);
         if (requestDto.getUserRole().equals(UserRole.CUSTOMER)) {
-            User savedUser = userRepository.save(user);
+            savedUser.setSignupStatus(SignupStatus.ACTIVE);
             return new UserResponseDto(savedUser);
         }
-        // 승인 대기
-        User savedUser = userRepository.save(user);
         savedUser.setSignupStatus(SignupStatus.PENDING);
         return new UserResponseDto(savedUser);
-
         // 슈퍼 관리자가 승인해야 됨.
     }
 
@@ -78,6 +75,9 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("존재하지 않는 유저입니다.")
         );
+        if(user.getSignupStatus() != SignupStatus.PENDING) {
+            throw new IllegalStateException("이미 처리된 유저입니다.");
+        }
         user.updateLoginStatus(requestDto.getSignupStatus());
         return new UpdateUserResponseDto(user);
     }
