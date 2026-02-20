@@ -52,21 +52,14 @@ public class CartService {
             // 4-1. 동일 상품이 있으면 수량만 증가
             cart = existingCart.get();
             cart.updateQuantity(cart.getQuantity() + request.getQuantity());
-        } else {
+        }
             // 5. 다른 상품인 경우 새로운 장바구니 생성
             cart = new Cart(request.getId(), request.getQuantity(), user, product);
-            cart = cartRepository.save(cart);
+        Cart savedCart = cartRepository.save(cart);
 
-        }
 
-        return new CartResponseDto(
-                cart.getId(),
-                cart.getQuantity(),
-                cart.getUser().getId(),
-                cart.getProduct().getId(),
-                cart.getCreatedAt(),
-                cart.getModifiedAt()
-        );
+
+        return new CartResponseDto(savedCart);
     }
     }
 

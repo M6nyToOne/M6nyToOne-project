@@ -12,8 +12,6 @@ import sparta.m6nytooneproject.user.entity.User;
 @Getter
 @Entity
 @Table(name = "carts")
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Cart extends BaseEntity {
 

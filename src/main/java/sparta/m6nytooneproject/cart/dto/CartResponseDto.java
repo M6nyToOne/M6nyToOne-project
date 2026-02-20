@@ -1,5 +1,6 @@
 package sparta.m6nytooneproject.cart.dto;
 
+import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.user.entity.User;
 
@@ -7,19 +8,19 @@ import java.time.LocalDateTime;
 
 public class CartResponseDto {
 
-    private Long id;
-    private int quantity;
-    private Long userId;
-    private Long productId;
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
+    final private Long id;
+    final private int quantity;
+    final private Long userId;
+    final private Long productId;
+    final private LocalDateTime createdAt;
+    final private LocalDateTime updatedAt;
 
-    public CartResponseDto(Long id, int quantity, Long userId, Long productId, LocalDateTime createdDate, LocalDateTime updatedDate) {
-        this.id = id;
-        this.quantity = quantity;
-        this.userId = userId;
-        this.productId = productId;
-        this.createdDate = createdDate;
-        this.updatedDate = updatedDate;
+    public CartResponseDto(Cart cart) {
+        this.id = cart.getId();
+        this.quantity = cart.getQuantity();
+        this.userId = cart.getUser().getId();
+        this.productId = cart.getProduct().getId();
+        this.createdAt = cart.getCreatedAt();
+        this.updatedAt = cart.getModifiedAt();
     }
 }
