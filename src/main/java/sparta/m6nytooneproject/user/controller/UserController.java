@@ -29,7 +29,7 @@ public class UserController {
     private final UserService userService;
 
     // 신규 관리자 회원가입 (회원가입시 승인대기 상태일 것 -> 슈퍼 관리자가 승인해줘야 로그인 가능)
-    @PostMapping("/register")
+    @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> createUser(
             @Valid @RequestBody UserRequestDto requestDto
     ) {
