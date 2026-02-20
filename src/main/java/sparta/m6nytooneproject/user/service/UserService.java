@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sparta.m6nytooneproject.config.PasswordEncoder;
 import sparta.m6nytooneproject.global.dto.LoginRequest;
 import sparta.m6nytooneproject.global.dto.SessionUser;
-import sparta.m6nytooneproject.user.dto.UpdateUserRequestDto;
-import sparta.m6nytooneproject.user.dto.UpdateUserResponseDto;
-import sparta.m6nytooneproject.user.dto.UserRequestDto;
-import sparta.m6nytooneproject.user.dto.UserResponseDto;
+import sparta.m6nytooneproject.user.dto.*;
 import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.entity.UserRole;
@@ -58,30 +56,6 @@ public class UserService {
         return new UserResponseDto(savedUser);
         // 슈퍼 관리자가 승인해야 됨.
     }
-
-    // 페이징 메서드
-    public Page<User> getPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return userRepository.findAll(pageable);
-    }
-    // 승인 대기중인 관리자 조회
-    public List<UserResponseDto> getPendingUsers(Page<User> userPage) {
-        return userPage.stream().map(UserResponseDto::new).toList();
-    }
-
-    // 슈퍼 관리자가 승인대기중인 관리자 승인
-    @Transactional
-    public UpdateUserResponseDto updatePendingUser(Long userId, UpdateUserRequestDto requestDto) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("존재하지 않는 유저입니다.")
-        );
-        if(user.getSignupStatus() != SignupStatus.PENDING) {
-            throw new IllegalStateException("이미 처리된 유저입니다.");
-        }
-        user.updateLoginStatus(requestDto.getSignupStatus());
-        return new UpdateUserResponseDto(user);
-    }
-
     // 로그인
     public SessionUser login(LoginRequest request) {
         // 이메일이 유효한지
@@ -103,5 +77,98 @@ public class UserService {
         }
         // 활성상태라면 로그인
         return new SessionUser(user);
+    }
+
+    // 슈퍼 관리자가 승인대기중인 관리자 전체조회
+    public Page<UserResponseDto> getPendingUsers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return userRepository.findByRoleInAndSignupStatus(
+                List.of(UserRole.SUPER_ADMIN, UserRole.OPER_ADMIN, UserRole.MARKET_ADMIN, UserRole.CS_ADMIN),
+                SignupStatus.PENDING,
+                pageable
+                ).map(UserResponseDto::new);
+    }
+
+    // 슈퍼 관리자가 승인대기중인 관리자 승인(업데이트) / 각종 상태 변경
+    @Transactional
+    public UpdateUserStatusResponseDto updatePendingUser(Long userId, UpdateUserStatusRequestDto requestDto) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("존재하지 않는 유저입니다.")
+        );
+        // 슈퍼 관리자가 승인대기 상태를 활성/거부 상태로 업데이트
+        // 거부 사유가 null이 아니면 거부 상태로 변경
+        if (requestDto.getRejectMessage() != null) {
+            user.setSignupStatus(SignupStatus.REJECTED);
+            return new UpdateUserStatusResponseDto(user);
+        }
+        // null이라면 활성 상태로 변경
+        user.setSignupStatus(SignupStatus.ACTIVE);
+        return new UpdateUserStatusResponseDto(user);
+    }
+
+    // 등록된 관리자 전체 조회
+    public Page<UserResponseDto> getRegisteredUsers(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<User> users = userRepository.findByRoleNotAndSignupStatus(UserRole.CUSTOMER, SignupStatus.ACTIVE, pageable);
+        return users.map(UserResponseDto::new);
+    }
+
+    // 등록된 관리자 상제 조회 (단 건 조회)
+    public UserResponseDto getOneRegisteredUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("존재하지 않는 유저입니다.")
+        );
+        if (user.getRole().equals(UserRole.CUSTOMER)) {
+            throw new IllegalStateException("관리자 계정이 아닙니다.");
+        }
+        if (user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
+            throw new IllegalStateException("승인된 계정이 아닙니다.");
+        }
+        return new UserResponseDto(user);
+    }
+
+    // 등록된 관리자 정보 수정
+    @Transactional
+    public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto requestDto) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("존재하지 않는 유저입니다.")
+        );
+        user.updateUserInfo(
+                requestDto.getUserName(),
+                requestDto.getEmail(),
+                requestDto.getPhoneNumber()
+        );
+        return new UpdateUserInfoResponseDto(user);
+    }
+
+    // 등록된 관리자 역할 변경
+    @Transactional
+    public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto requestDto) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("존재하지 않는 유저입니다.")
+        );
+        if (requestDto.getUserRole().equals(user.getRole())) {
+            throw new IllegalStateException("이미 해당 역할입니다.");
+        }
+        user.updateUserRole(requestDto.getUserRole());
+        return new UpdateRegisteredUserResponseDto(user);
+    }
+
+
+    // 내 프로필 조회
+    public GetUserResponseDto getMyInfo(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("존재하지 않는 유저입니다.")
+        );
+        return new GetUserResponseDto(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        boolean existence = userRepository.existsById(userId);
+        if (!existence) {
+            throw new IllegalStateException("존재하지 않는 유저입니다.");
+        }
+        userRepository.deleteById(userId);
     }
 }
