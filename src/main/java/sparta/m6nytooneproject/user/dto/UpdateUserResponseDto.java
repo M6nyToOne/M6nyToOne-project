@@ -7,7 +7,7 @@ import sparta.m6nytooneproject.user.entity.User;
 import java.time.LocalDateTime;
 
 @Getter
-public class UserResponseDto {
+public class UpdateUserResponseDto {
 
     private final Long id;
     private final String userName;
@@ -17,7 +17,7 @@ public class UserResponseDto {
     private final LocalDateTime createdAt;
     private final LocalDateTime modifiedAt;
 
-    public UserResponseDto(User user) {
+    public UpdateUserResponseDto(User user) {
         this.id = user.getId();
         this.userName = user.getUserName();
         this.email = user.getEmail();
