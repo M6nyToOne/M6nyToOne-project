@@ -5,8 +5,10 @@ import lombok.Getter;
 import sparta.m6nytooneproject.user.entity.SignupStatus;
 
 @Getter
-public class UpdateUserRequestDto {
+public class UpdateUserStatusRequestDto {
 
     @NotNull(message = "상태를 변경해주세요.")
     private SignupStatus signupStatus;
+
+    private String rejectMessage;
 }

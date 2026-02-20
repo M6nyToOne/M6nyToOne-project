@@ -5,12 +5,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
 
 @Getter
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SoftDelete(columnName = "deleted")
 public class User extends BaseEntity {
 
     @Id
@@ -45,7 +47,19 @@ public class User extends BaseEntity {
         this.role = userRole;
     }
 
-    public void updateLoginStatus(SignupStatus signupStatus) {
+    public void updateSignupStatus(SignupStatus signupStatus) {
         this.signupStatus = signupStatus;
     }
+
+    public void updateUserRole(UserRole userRole) {
+        this.role = userRole;
+    }
+
+    public void updateUserInfo(String userName, String email, String phoneNumber) {
+        this.userName =userName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+    }
+
+
 }
