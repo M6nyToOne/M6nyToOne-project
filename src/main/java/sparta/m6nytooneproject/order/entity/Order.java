@@ -5,16 +5,18 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.user.entity.User;
 
 import java.util.UUID;
 
+@Getter
 @Entity
 @Table(name = "orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Getter
+@SoftDelete(columnName = "deleted")
 public class Order extends BaseEntity {
 
     @Id

@@ -1,6 +1,5 @@
 package sparta.m6nytooneproject.order.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import sparta.m6nytooneproject.order.entity.Order;
@@ -39,7 +38,7 @@ public class OrderDetailResponseDto {
         return new OrderDetailResponseDto(
                 order.getOrderId().toString(),
                 order.getProductName(),
-                order.getProduct().getCategory(),
+                order.getProduct().getCategory().getCategory(),
                 order.getQuantity() * order.getProductPrice(),
                 order.getQuantity(),
                 order.getStatus().getStatus(),

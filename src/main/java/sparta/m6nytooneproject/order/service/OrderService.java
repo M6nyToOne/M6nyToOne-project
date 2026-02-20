@@ -73,6 +73,9 @@ public class OrderService {
         Order order = getOrderById(orderId);
         order.cancelOrder(cancelReason);
 
+        orderRepository.saveAndFlush(order);
+        orderRepository.delete(order);
+
         //TODO : product 수량 조절 서비스 호출
         manageProductStock(order.getProduct().getId(),order.getQuantity());
     }
