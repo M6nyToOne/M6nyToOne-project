@@ -40,17 +40,23 @@ public class ProductController {
     }
 
     @PatchMapping ("/products/{productId}")
-    public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable Long productId, @RequestBody UpdateProductRequestDto request) {
+    public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable Long productId, @Valid @RequestBody UpdateProductRequestDto request) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(productId, request));
     }
 
     @PatchMapping("/products/{productId}/stock")
-    public ResponseEntity<ProductResponseDto> updateProductStock(@PathVariable Long productId, @RequestBody UpdateProductStockRequestDto request){
+    public ResponseEntity<ProductResponseDto> updateProductStock(@PathVariable Long productId, @Valid @RequestBody UpdateProductStockRequestDto request){
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStock(productId, request));
     }
 
     @PatchMapping("/products/{productId}/status")
-    public ResponseEntity<ProductResponseDto> updateProductStatus(@PathVariable Long productId, @RequestBody UpdateProductStatusRequestDto request){
+    public ResponseEntity<ProductResponseDto> updateProductStatus(@PathVariable Long productId, @Valid @RequestBody UpdateProductStatusRequestDto request){
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStatus(productId, request));
+    }
+
+    @DeleteMapping("/products/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId){
+        productService.deleteProduct(productId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

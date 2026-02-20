@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
 import sparta.m6nytooneproject.product.enums.Category;
 import sparta.m6nytooneproject.product.enums.Status;
@@ -14,6 +15,7 @@ import sparta.m6nytooneproject.user.entity.User;
 @Entity
 @Table(name = "products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SoftDelete(columnName = "deleted")
 public class Product extends BaseEntity {
 
     @Id

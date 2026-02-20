@@ -133,6 +133,15 @@ public class ProductService {
 
         return new ProductResponseDto(product);
     }
+
+    @Transactional
+    public void deleteProduct(Long productId) {
+        Product product = productRepository.findById(productId).orElseThrow(
+                () -> new IllegalStateException("없는 상품 입니다.")
+        );
+
+        productRepository.delete(product);
+    }
 }
 
 
