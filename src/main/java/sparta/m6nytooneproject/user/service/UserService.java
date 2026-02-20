@@ -84,12 +84,24 @@ public class UserService {
 
     // 로그인
     public SessionUser login(LoginRequest request) {
+        // 이메일이 유효한지
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
                 () -> new IllegalStateException("이미 로그인되어있는 유저입니다.")
         );
-        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
-            throw new IllegalStateException("활성화되지 않는 유저입니다.");
+        // 비밀번호가 일치하는지
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
         }
+        // 회원가입 상태가 활성되지 않았다면 예외
+        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
+            switch (user.getSignupStatus()) {
+                case PENDING -> throw new IllegalStateException("회원가입 승인 대기중입니다.");
+                case REJECTED -> throw new IllegalStateException("회원가입 신청이 거부되었습니다.");
+                case SUSPEND -> throw new IllegalStateException("계정이 정지되었습니다.");
+                case INACTIVE -> throw new IllegalStateException("계정이 비활성화 상태입니다.");
+            }
+        }
+        // 활성상태라면 로그인
         return new SessionUser(user);
     }
 }

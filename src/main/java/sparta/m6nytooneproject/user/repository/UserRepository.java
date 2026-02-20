@@ -12,7 +12,5 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
-    Page<UserResponseDto> findPendingUserByPage(Pageable pageable);
-
     Optional<User> findByEmail(String email);
 }
