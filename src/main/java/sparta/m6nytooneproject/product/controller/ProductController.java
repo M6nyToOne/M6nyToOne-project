@@ -46,7 +46,7 @@ public class ProductController {
 
     @PatchMapping("/products/{productId}/stock")
     public ResponseEntity<ProductResponseDto> updateProductStock(@PathVariable Long productId, @Valid @RequestBody UpdateProductStockRequestDto request){
-        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStock(productId, request));
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStock(productId, request.getStock()));
     }
 
     @PatchMapping("/products/{productId}/status")

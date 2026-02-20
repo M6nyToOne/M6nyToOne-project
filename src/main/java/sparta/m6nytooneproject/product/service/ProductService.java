@@ -23,14 +23,13 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto createProduct(Long userId, ProductRequestDto request) {
-        User user = userRepository.findById(userId).orElseThrow(
+        User admin = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("없는 유저 입니다.")
         );
 
-        Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), user);
+        Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), admin);
         Product savedProduct = productRepository.save(product);
         return new ProductResponseDto(savedProduct);
-
     }
 
     public Page<ProductResponseDto> getAllProducts(Pageable pageable, String productName, Category category, Status status) {
@@ -70,18 +69,14 @@ public class ProductService {
     }
 
     public GetOneProductResponseDto getOneProduct(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new IllegalStateException("없는 상품 입니다.")
-        );
+        Product product = getProductById(productId);
 
         return new GetOneProductResponseDto(product);
     }
 
     @Transactional
     public ProductResponseDto updateProduct(Long productId, UpdateProductRequestDto request) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new IllegalStateException("없는 상품 입니다.")
-        );
+        Product product = getProductById(productId);
 
         product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
 
@@ -89,26 +84,22 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProductStock(Long productId, UpdateProductStockRequestDto request) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new IllegalStateException("없는 상품 입니다.")
-        );
+    public ProductResponseDto updateProductStock(Long productId, int stock) {
+        Product product = getProductById(productId);
 
         if (product.getStatus() == Status.DISCONTINUED) {
-            product.updateProductStock(request.getStock());
+            product.updateProductStock(stock);
         } else {
-            product.updateProductStockAndStatus(request.getStock());
+            product.updateProductStockAndStatus(stock);
         }
-
         return new ProductResponseDto(product);
     }
 
     @Transactional
     public Product checkProductStock(Long productId, int quantity){
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new IllegalStateException("없는 상품 입니다.")
-        );
+        Product product = getProductById(productId);
 
+        // 재고가 남아도 단종이면 주문 불가?
         if (product.getStatus() == Status.DISCONTINUED){
             throw new IllegalStateException("단종된 상품입니다.");
         }
@@ -125,10 +116,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProductStatus(Long productId, UpdateProductStatusRequestDto request) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new IllegalStateException("없는 상품 입니다.")
-        );
-
+        Product product = getProductById(productId);
         product.updateProductStatus(request.getStatus());
 
         return new ProductResponseDto(product);
@@ -136,11 +124,14 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
+        Product product = getProductById(productId);
+        productRepository.delete(product);
+    }
+
+    public Product getProductById(Long productId) {
+        return productRepository.findById(productId).orElseThrow(
                 () -> new IllegalStateException("없는 상품 입니다.")
         );
-
-        productRepository.delete(product);
     }
 }
 
