@@ -8,9 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sparta.m6nytooneproject.product.dto.GetOneProductResponseDto;
-import sparta.m6nytooneproject.product.dto.ProductRequestDto;
-import sparta.m6nytooneproject.product.dto.ProductResponseDto;
+import sparta.m6nytooneproject.product.dto.*;
 import sparta.m6nytooneproject.product.enums.Category;
 import sparta.m6nytooneproject.product.enums.Status;
 import sparta.m6nytooneproject.product.service.ProductService;
@@ -41,6 +39,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getOneProduct(productId));
     }
 
+    @PatchMapping ("/products/{productId}")
+    public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable Long productId, @RequestBody UpdateProductRequestDto request) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(productId, request));
+    }
 
+    @PatchMapping("/products/{productId}/stock")
+    public ResponseEntity<ProductResponseDto> updateProductStock(@PathVariable Long productId, @RequestBody UpdateProductStockRequestDto request){
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStock(productId, request));
+    }
 
+    @PatchMapping("/products/{productId}/status")
+    public ResponseEntity<ProductResponseDto> updateProductStatus(@PathVariable Long productId, @RequestBody UpdateProductStatusRequestDto request){
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStatus(productId, request));
+    }
 }

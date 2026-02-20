@@ -12,6 +12,4 @@ public enum Category {
     FOOD("식품");
 
     private final String category;
-
-
 }
