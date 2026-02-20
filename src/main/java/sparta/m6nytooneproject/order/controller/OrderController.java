@@ -42,7 +42,7 @@ public class OrderController {
                 .body(orderService.getOrderDetail(orderId));
     }
 
-    @PatchMapping("/{orderId}/cancel")
+    @DeleteMapping("/{orderId}/cancel")
     public ResponseEntity<Void> cancelOrder(
             @PathVariable Long orderId,
             @RequestParam String cancelReason
