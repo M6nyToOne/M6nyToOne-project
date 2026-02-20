@@ -31,16 +31,8 @@ public class ProductService {
 
         Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), user);
         Product savedProduct = productRepository.save(product);
-        return new ProductResponseDto(
-                savedProduct.getId(),
-                savedProduct.getProductName(),
-                savedProduct.getCategory(),
-                savedProduct.getPrice(),
-                savedProduct.getStock(),
-                savedProduct.getStatus(),
-                savedProduct.getCreatedAt(),
-                savedProduct.getUser().getUserName()
-        );
+        return new ProductResponseDto(savedProduct);
+
     }
 
     public Page<ProductResponseDto> getAllProducts(Pageable pageable, String productName, Category category, Status status) {
@@ -49,20 +41,12 @@ public class ProductService {
         if (productName != null && category == null && status == null) {
             // 검색 키워드 상품명 조회
             products = productRepository.findByProductNameContaining(pageable, productName);
-        } else if() {
+        } else if () {
             products = productRepository.findAll(pageable);
         }
 
-        return products.map(product -> new ProductResponseDto(
-                product.getId(),
-                product.getProductName(),
-                product.getCategory(),
-                product.getPrice(),
-                product.getStock(),
-                product.getStatus(),
-                product.getCreatedAt(),
-                product.getUser().getUserName()
-        ));
+        return products.map(product -> new ProductResponseDto(product)
+        );
     }
 
     public GetOneProductResponseDto getOneProduct(Long productId) {
@@ -70,17 +54,7 @@ public class ProductService {
                 () -> new IllegalStateException("없는 상품 입니다.")
         );
 
-        return new GetOneProductResponseDto(
-                product.getId(),
-                product.getProductName(),
-                product.getCategory(),
-                product.getPrice(),
-                product.getStock(),
-                product.getStatus(),
-                product.getCreatedAt(),
-                product.getUser().getUserName(),
-                product.getUser().getEmail()
-        );
+        return new GetOneProductResponseDto(product);
     }
 }
 
