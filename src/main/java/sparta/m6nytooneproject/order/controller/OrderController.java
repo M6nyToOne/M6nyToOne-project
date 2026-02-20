@@ -1,5 +1,6 @@
 package sparta.m6nytooneproject.order.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -7,9 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sparta.m6nytooneproject.order.dto.OrderRequest;
-import sparta.m6nytooneproject.order.dto.OrderResponseDto;
-import sparta.m6nytooneproject.order.dto.updateOrderStatus;
+import sparta.m6nytooneproject.order.dto.*;
 import sparta.m6nytooneproject.order.service.OrderService;
 
 @RestController
@@ -19,14 +18,14 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequest orderRequest) {
+    public ResponseEntity<OrderDetailResponseDto> createOrder(@RequestBody @Valid OrderRequest orderRequest) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(orderService.createOrder(orderRequest));
     }
 
     @GetMapping
-    public ResponseEntity<Page<OrderResponseDto>> getAllOrders(
+    public ResponseEntity<Page<OrderListResponseDto>> getAllOrders(
             @RequestParam(required = false) String username,
             @RequestParam(required = false) Long orderId,
             @PageableDefault Pageable pageable
@@ -37,7 +36,7 @@ public class OrderController {
     }
 
     @GetMapping("{orderId}")
-    public ResponseEntity<OrderResponseDto> getAllOrders(@PathVariable Long orderId) {
+    public ResponseEntity<OrderDetailResponseDto> getOneOrder(@PathVariable Long orderId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(orderService.getOrderDetail(orderId));
@@ -55,7 +54,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/complete")
-    public ResponseEntity<OrderResponseDto> completeOrder(
+    public ResponseEntity<OrderDetailResponseDto> completeOrder(
             @PathVariable Long orderId
     ) {
         return ResponseEntity
@@ -64,9 +63,9 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/status")
-    public ResponseEntity<OrderResponseDto> updateOrderStatus(
+    public ResponseEntity<OrderDetailResponseDto> updateOrderStatus(
             @PathVariable Long orderId,
-            @RequestBody updateOrderStatus status
+            @RequestBody @Valid updateOrderStatus status
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
