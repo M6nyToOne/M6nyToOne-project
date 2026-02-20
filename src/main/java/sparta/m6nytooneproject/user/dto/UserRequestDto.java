@@ -1,6 +1,5 @@
 package sparta.m6nytooneproject.user.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import sparta.m6nytooneproject.user.entity.UserRole;
@@ -20,6 +19,6 @@ public class UserRequestDto {
     @Pattern(regexp = "^010-\\d{4}-\\d{4}$")
     private String phoneNumber;
 
-    @NotBlank(message = "필수 입력 항목입니다.")
+    @NotNull(message = "필수 입력 항목입니다.")
     private UserRole userRole;
 }
