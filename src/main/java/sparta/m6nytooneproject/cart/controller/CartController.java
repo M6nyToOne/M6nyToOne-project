@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
-import sparta.m6nytooneproject.cart.repository.CartRepository;
 import sparta.m6nytooneproject.cart.service.CartService;
 import sparta.m6nytooneproject.global.dto.SessionUser;
 import java.util.List;
@@ -25,8 +24,11 @@ public class CartController {
 
     //장바구니 생성
     @PostMapping
-    public ResponseEntity<CartResponseDto> createCart(@Valid @RequestBody CartRequestDto request) {
-        CartResponseDto result = cartService.createCart(request);
+    public ResponseEntity<CartResponseDto> createCart(
+            @Valid @RequestBody CartRequestDto request,
+            @SessionAttribute(name= "login_user", required = false) SessionUser loginUser
+    ) {
+        CartResponseDto result = cartService.createCart(request,loginUser );
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -53,13 +55,21 @@ public class CartController {
     @PatchMapping("/{cartId}")
     public ResponseEntity<CartResponseDto> updateCart(
             @PathVariable Long cartId,
-            @RequestBody CartRequestDto request,
+            @Valid @RequestBody CartRequestDto request,
             @SessionAttribute(name= "login_user", required = false) SessionUser loginUser){
 
         CartResponseDto result = cartService.updateCart(cartId, request, loginUser.getId());
 
         return ResponseEntity.ok(result);
 
+    }
+
+    @DeleteMapping("/{cartId}")
+    public ResponseEntity<CartResponseDto> deleteCart(
+            @PathVariable Long cartId,
+            @SessionAttribute(name= "login_user", required = false) SessionUser loginUser) {
+       cartService.deleteCart(cartId, loginUser.getId());
+       return ResponseEntity.noContent().build();
     }
 
 }

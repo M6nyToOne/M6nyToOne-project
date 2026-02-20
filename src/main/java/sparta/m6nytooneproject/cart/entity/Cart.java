@@ -3,8 +3,7 @@ package sparta.m6nytooneproject.cart.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.user.entity.User;
@@ -13,6 +12,7 @@ import sparta.m6nytooneproject.user.entity.User;
 @Entity
 @Table(name = "carts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SoftDelete(columnName = "deleted")
 public class Cart extends BaseEntity {
 
     @Id

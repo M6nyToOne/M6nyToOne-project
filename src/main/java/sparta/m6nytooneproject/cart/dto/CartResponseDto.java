@@ -1,8 +1,6 @@
 package sparta.m6nytooneproject.cart.dto;
 
 import sparta.m6nytooneproject.cart.entity.Cart;
-import sparta.m6nytooneproject.product.entity.Product;
-import sparta.m6nytooneproject.user.entity.User;
 
 import java.time.LocalDateTime;
 

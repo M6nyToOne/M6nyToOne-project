@@ -13,6 +13,7 @@ import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.cart.repository.CartRepository;
+import sparta.m6nytooneproject.global.dto.SessionUser;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.enums.Status;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
@@ -33,15 +34,14 @@ public class CartService {
     private final ProductRepository productRepository; //상품 확인용
 
     //장바구니 생성
-    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request) {
+    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request, SessionUser loginUser) {
 
         // 1. 고객 존재 여부 확인
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 고객입니다."));
 
         //1-1. 고객 상태 체크 로직추가
-        SignupStatus userStatus = user.getSignupStatus();
-        if(!user.getSignupStatus().equals(userStatus.ACTIVE)){
+        if(!user.getSignupStatus().equals(SignupStatus.ACTIVE)){
             throw new IllegalStateException("현재 유저가 활성 상태가 아닙니다.");
         }
 
@@ -50,8 +50,7 @@ public class CartService {
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 상품입니다."));
 
         // 2-1. 판매 중인 상품인지 확인 (품절, 단종 체크)
-        Status productStatus = product.getStatus();//존재하는 상품의 상태 확인
-        if (!product.getStatus().equals(productStatus.ON_SALE)) {//상품상태 enum으로 생성되었는지 확인
+        if (!product.getStatus().equals(Status.ON_SALE)) {//상품상태 enum으로 생성되었는지 확인
             throw new IllegalStateException("현재 판매 중인 상품이 아닙니다.");
         }
 
@@ -65,7 +64,7 @@ public class CartService {
             cart.updateQuantity(cart.getQuantity() + request.getQuantity());
         }
             // 4. 다른 상품인 경우 새로운 장바구니 생성
-            cart = new Cart(request.getId(), request.getQuantity(), user, product);
+            cart = new Cart(user.getId(), request.getQuantity(), user, product);
         Cart savedCart = cartRepository.save(cart);
 
         return new CartResponseDto(savedCart);
@@ -85,8 +84,7 @@ public class CartService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 고객입니다."));
 
-        SignupStatus userStatus = user.getSignupStatus();
-        if(!user.getSignupStatus().equals(userStatus.ACTIVE)){
+        if(!user.getSignupStatus().equals(SignupStatus.ACTIVE)){
             throw new IllegalStateException("현재 유저가 활성 상태가 아닙니다.");
         }
 
@@ -117,5 +115,14 @@ public class CartService {
     }
 
 
+    public void deleteCart(Long cartId, Long loginUserId) {
 
+        Cart cart = cartRepository.findById(cartId).
+                orElseThrow(() -> new EntityNotFoundException("존재하지 않는 장바구니입니다."));
+
+        if (!cart.getUser().getId().equals(loginUserId)) {
+            throw new IllegalStateException("해당 장바구니 수정 권한이 없습니다.");
+        }
+        cartRepository.delete(cart);
+    }
 }
