@@ -7,10 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
-import sparta.m6nytooneproject.cart.repository.CartRepository;
 import sparta.m6nytooneproject.cart.service.CartService;
 import sparta.m6nytooneproject.global.dto.SessionUser;
 import java.util.List;
@@ -53,13 +53,21 @@ public class CartController {
     @PatchMapping("/{cartId}")
     public ResponseEntity<CartResponseDto> updateCart(
             @PathVariable Long cartId,
-            @RequestBody CartRequestDto request,
+            @Valid @RequestBody CartRequestDto request,
             @SessionAttribute(name= "login_user", required = false) SessionUser loginUser){
 
         CartResponseDto result = cartService.updateCart(cartId, request, loginUser.getId());
 
         return ResponseEntity.ok(result);
 
+    }
+
+    @DeleteMapping("/{cartId}")
+    public ResponseEntity<CartResponseDto> deleteCart(
+            @PathVariable Long cartId,
+            @SessionAttribute(name= "login_user", required = false) SessionUser loginUser) {
+       cartService.deleteCart(cartId, loginUser.getId());
+       return ResponseEntity.noContent().build();
     }
 
 }
