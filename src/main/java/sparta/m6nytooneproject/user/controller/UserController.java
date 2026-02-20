@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,6 @@ import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.service.UserService;
 
 import java.awt.*;
-import java.awt.print.Pageable;
 import java.util.List;
 
 @RestController
@@ -64,5 +62,20 @@ public class UserController {
         SessionUser sessionUser = userService.login(request);
         session.setAttribute("login_user", sessionUser);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @SessionAttribute(name = "login_user", required = false) SessionUser sessionUser,
+            HttpSession session
+    ) {
+        // 세션유저가 없다면 잘못된 요청 에러 반환
+        if (sessionUser == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        // 있다면 세션 무효화 후 NO_CONTENT 상태 반환
+        session.invalidate();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
