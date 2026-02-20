@@ -1,7 +1,6 @@
 package sparta.m6nytooneproject.product.dto;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.enums.Category;
 import sparta.m6nytooneproject.product.enums.Status;
@@ -30,7 +29,7 @@ public class GetOneProductResponseDto {
         this.stock = product.getStock();
         this.status = product.getStatus();
         this.createdAt = product.getCreatedAt();
-        this.createdBy = product.getUser().getUserName();
-        this.createdByEmail = product.getUser().getEmail();
+        this.createdBy = product.getAdmin().getUserName();
+        this.createdByEmail = product.getAdmin().getEmail();
     }
 }

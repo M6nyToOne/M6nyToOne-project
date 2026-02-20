@@ -18,6 +18,8 @@ import sparta.m6nytooneproject.user.entity.User;
 @SoftDelete(columnName = "deleted")
 public class Product extends BaseEntity {
 
+    private final int SOLD_OUT_VALUE = 0;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,16 +42,16 @@ public class Product extends BaseEntity {
     private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user; // 등록관리자
+    @JoinColumn(name = "admin_id", nullable = false)
+    private User admin;
 
-    public Product(String productName, Category category, int price, int stock, Status status, User user) {
+    public Product(String productName, Category category, int price, int stock, Status status, User admin) {
         this.productName = productName;
         this.category = category;
         this.price = price;
         this.stock = stock;
         this.status = status;
-        this.user = user;
+        this.admin = admin;
     }
 
     public void updateProduct(String productName, Category category, int price) {
@@ -63,14 +65,25 @@ public class Product extends BaseEntity {
     }
 
     public void updateProductStockAndStatus(int stock) {
-        if (this.stock <= 0) {
-            this.stock = 0;
+        if (this.stock <= SOLD_OUT_VALUE) {
+            this.stock = SOLD_OUT_VALUE;
             this.status = Status.SOLD_OUT;
         } else {
             this.stock = stock;
             this.status = Status.ON_SALE;
         }
     }
+
+    public void discontinuedProduct() {
+        this.stock = SOLD_OUT_VALUE;
+        this.status = Status.DISCONTINUED;
+    }
+
+    public void soldOutProduct() {
+        this.stock = SOLD_OUT_VALUE;
+        this.status = Status.SOLD_OUT;
+    }
+
 
     public void updateProductStatus(Status status) {
         this.status = status;
