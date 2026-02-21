@@ -5,7 +5,7 @@ import lombok.Getter;
 import sparta.m6nytooneproject.order.entity.OrderStatus;
 
 @Getter
-public class updateOrderStatus {
+public class updateOrderStatusDto {
     @NotNull
     private OrderStatus status;
 }

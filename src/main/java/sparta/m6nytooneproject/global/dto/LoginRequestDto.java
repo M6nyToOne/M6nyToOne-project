@@ -2,12 +2,11 @@ package sparta.m6nytooneproject.global.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public class LoginRequest {
+public class LoginRequestDto {
     @NotBlank(message = "이메일을 입력해주세요.")
     @Email(message = "이메일 형식으로 입력해주세요.")
     private String email;

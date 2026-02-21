@@ -11,7 +11,9 @@ import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.cart.service.CartService;
-import sparta.m6nytooneproject.global.dto.SessionUser;
+import sparta.m6nytooneproject.global.AuthConstants;
+import sparta.m6nytooneproject.global.dto.ApiResponseDto;
+import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import java.util.List;
 
 @RestController
@@ -24,52 +26,50 @@ public class CartController {
 
     //장바구니 생성
     @PostMapping
-    public ResponseEntity<CartResponseDto> createCart(
+    public ResponseEntity<ApiResponseDto<CartResponseDto>> createCart(
             @Valid @RequestBody CartRequestDto request,
-            @SessionAttribute(name= "login_user", required = false) SessionUser loginUser
+            @SessionAttribute(name = AuthConstants.LOGIN_USER, required = false) SessionUserDto loginUser
     ) {
-        CartResponseDto result = cartService.createCart(request,loginUser );
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        CartResponseDto result = cartService.createCart(request, loginUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseDto.success(result));
     }
 
     //유저id로 전체조회
     @GetMapping
-    public ResponseEntity<List<CartResponseDto>> getAllCartsByUserId(
+    public ResponseEntity<ApiResponseDto<List<CartResponseDto>>> getAllCartsByUserId(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<Cart> cartPage = cartService.getCartPageByUserId(userId, page,size);
-
-        return ResponseEntity.status(HttpStatus.OK).body(cartService.getAllCartByUserId(cartPage, userId));
+        Page<Cart> cartPage = cartService.getCartPageByUserId(userId, page, size);
+        return ResponseEntity.ok(ApiResponseDto.success(cartService.getAllCartsByUserId(cartPage, userId)));
     }
 
     //카트id로 단건조회
     @GetMapping("/{cartId}")
-    public ResponseEntity<CartResponseDto> getOneCart(@PathVariable Long cartId) {
-
-        return ResponseEntity.status(HttpStatus.OK).body(cartService.getOneCart(cartId));
+    public ResponseEntity<ApiResponseDto<CartResponseDto>> getOneCart(
+            @PathVariable Long cartId
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(cartService.getOneCart(cartId)));
     }
 
     //카트id로 수정
     @PatchMapping("/{cartId}")
-    public ResponseEntity<CartResponseDto> updateCart(
+    public ResponseEntity<ApiResponseDto<CartResponseDto>> updateCart(
             @PathVariable Long cartId,
             @Valid @RequestBody CartRequestDto request,
-            @SessionAttribute(name= "login_user", required = false) SessionUser loginUser){
-
+            @SessionAttribute(name= AuthConstants.LOGIN_USER, required = false) SessionUserDto loginUser
+    ) {
         CartResponseDto result = cartService.updateCart(cartId, request, loginUser.getId());
-
-        return ResponseEntity.ok(result);
-
+        return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @DeleteMapping("/{cartId}")
-    public ResponseEntity<CartResponseDto> deleteCart(
+    public ResponseEntity<ApiResponseDto<CartResponseDto>> deleteCart(
             @PathVariable Long cartId,
-            @SessionAttribute(name= "login_user", required = false) SessionUser loginUser) {
+            @SessionAttribute(name= AuthConstants.LOGIN_USER, required = false) SessionUserDto loginUser
+    ) {
        cartService.deleteCart(cartId, loginUser.getId());
-       return ResponseEntity.noContent().build();
+       return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
-
 }

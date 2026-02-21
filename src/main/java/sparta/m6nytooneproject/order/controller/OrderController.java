@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.order.dto.*;
 import sparta.m6nytooneproject.order.service.OrderService;
 
@@ -18,57 +19,50 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderDetailResponseDto> createOrder(@RequestBody @Valid OrderRequest orderRequest) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(orderService.createOrder(orderRequest));
+    public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> createOrder(
+            @RequestBody @Valid OrderRequestDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponseDto.success(orderService.createOrder(request)));
     }
 
     @GetMapping
-    public ResponseEntity<Page<OrderListResponseDto>> getAllOrders(
+    public ResponseEntity<ApiResponseDto<Page<OrderListResponseDto>>> getAllOrders(
             @RequestParam(required = false) String username,
             @RequestParam(required = false) Long orderId,
             @PageableDefault Pageable pageable
     ) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(orderService.getAllOrders(pageable ,username ,orderId));
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(pageable ,username ,orderId)));
     }
 
     @GetMapping("{orderId}")
-    public ResponseEntity<OrderDetailResponseDto> getOneOrder(@PathVariable Long orderId) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(orderService.getOrderDetail(orderId));
+    public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> getOneOrder(
+            @PathVariable Long orderId
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.getOneOrder(orderId)));
+    }
+
+    @PatchMapping("/{orderId}/complete")
+    public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> completeOrder(
+            @PathVariable Long orderId
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.completeOrder(orderId)));
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestBody @Valid updateOrderStatusDto status
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.updateOrderStatus(orderId , status.getStatus())));
     }
 
     @DeleteMapping("/{orderId}/cancel")
-    public ResponseEntity<Void> cancelOrder(
+    public ResponseEntity<ApiResponseDto<Void>> cancelOrder(
             @PathVariable Long orderId,
             @RequestParam String cancelReason
     ) {
         orderService.cancelOrder(orderId, cancelReason);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .build();
-    }
-
-    @PatchMapping("/{orderId}/complete")
-    public ResponseEntity<OrderDetailResponseDto> completeOrder(
-            @PathVariable Long orderId
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(orderService.completeOrderStatus(orderId));
-    }
-
-    @PatchMapping("/{orderId}/status")
-    public ResponseEntity<OrderDetailResponseDto> updateOrderStatus(
-            @PathVariable Long orderId,
-            @RequestBody @Valid updateOrderStatus status
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(orderService.updateOrderStatus(orderId , status.getStatus()));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }
