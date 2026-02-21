@@ -12,8 +12,15 @@ import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.enums.Category;
 import sparta.m6nytooneproject.product.enums.Status;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
+import sparta.m6nytooneproject.review.entity.Review;
+import sparta.m6nytooneproject.review.repository.ReviewRepository;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.repository.UserRepository;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +29,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
 
     @Transactional
     public ProductResponseDto createProduct(Long userId, ProductRequestDto request) {
@@ -70,7 +78,33 @@ public class ProductService {
 
     public GetOneProductResponseDto getOneProduct(Long productId) {
         Product product = getProductById(productId);
-        return new GetOneProductResponseDto(product);
+        // 평균 평점
+        List<Review> reviews = reviewRepository.findAllReviewByProductId(productId);
+        if (reviews.isEmpty()) {
+            return new GetOneProductResponseDto(product, null, 0, null, null);
+        }
+        List<Integer> reviewRates = reviews.stream().map(Review::getReviewRate).toList();
+        int sum = reviewRates.stream().mapToInt(Integer::intValue).sum();
+        String averageRate = String.format("%.1f", (double) sum / reviews.size());
+        // 전체 리뷰 개수
+        int reviewCount = reviews.size();
+        // 별점별 개수
+        int fiveRateReviewCount = reviewRepository.find5rateReviewByProductId(productId).size();
+        int fourRateReviewCount = reviewRepository.find4rateReviewByProductId(productId).size();
+        int threeRateReviewCount = reviewRepository.find3rateReviewByProductId(productId).size();
+        int twoRateReviewCount = reviewRepository.find2rateReviewByProductId(productId).size();
+        int oneRateReviewCount = reviewRepository.find1rateReviewByProductId(productId).size();
+        Map<Integer, Integer> rating = new HashMap<>();
+        rating.put(5, fiveRateReviewCount);
+        rating.put(4, fourRateReviewCount);
+        rating.put(3, threeRateReviewCount);
+        rating.put(2, twoRateReviewCount);
+        rating.put(1, oneRateReviewCount);
+        ObjectMapper mapper = new ObjectMapper();
+        String ratingCounts = mapper.writeValueAsString(rating);
+        // 최신 리뷰
+        List<Review> recentReviews = reviewRepository.findTop3ByProductIdOrderByCreatedAtDesc(productId);
+        return new GetOneProductResponseDto(product, averageRate, reviewCount, ratingCounts, recentReviews);
     }
 
     @Transactional
