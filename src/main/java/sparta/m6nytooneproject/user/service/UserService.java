@@ -11,6 +11,7 @@ import sparta.m6nytooneproject.config.PasswordEncoder;
 import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.dto.LoginRequestDto;
 import sparta.m6nytooneproject.global.dto.SessionUserDto;
+import sparta.m6nytooneproject.global.exception.user.UserRoleNotMatchException;
 import sparta.m6nytooneproject.global.exception.common.SessionNotActiveException;
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
 import sparta.m6nytooneproject.global.exception.user.*;
@@ -208,4 +209,18 @@ public class UserService {
     }
 
     // 내 비밀변호 변경
+
+    // 고객이 맞는지 검증하는 메서드
+    public void checkValidCustomer(UserRole role){
+        if(!role.equals(UserRole.CUSTOMER)){
+            throw new UserRoleNotMatchException("권한이 올바르지 않습니다.");
+        }
+    }
+
+    //삭제, 수정 등 작업을 요청할때 요청한 유저와 그것을 작성한 유저가 동일한지 확인하는 서비스
+    public void validateRequesterIsOwner(Long requesterId, Long ownerId){
+        if(!requesterId.equals(ownerId)){
+            throw new UnAuthorizedException("권한이 없습니다.");
+        }
+    }
 }

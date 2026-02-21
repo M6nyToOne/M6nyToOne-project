@@ -81,4 +81,15 @@ public class Order extends BaseEntity {
         this.customer = customer;
         this.admin = admin;
     }
+
+    public Order(int productPrice, int quantity, OrderStatus status, String productName , String userName, Product product , User customer) {
+        this.productPrice = productPrice;
+        this.orderId = UUID.randomUUID();
+        this.quantity = quantity;
+        this.status = status;
+        this.productName = productName;
+        this.userName = userName;
+        this.product = product;
+        this.customer = customer;
+    }
 }

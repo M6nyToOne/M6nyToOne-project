@@ -2,28 +2,34 @@ package sparta.m6nytooneproject.order.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
+import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.order.dto.*;
 import sparta.m6nytooneproject.order.service.OrderService;
 
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
     private final OrderService orderService;
 
-    @PostMapping
+    @PostMapping("/customers")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> createOrder(
-            @RequestBody @Valid OrderRequestDto request
+            @RequestBody @Valid OrderRequestDto request,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseDto.success(orderService.createOrder(request)));
+                .body(ApiResponseDto.success(orderService.createOrderByCustomer(request ,sessionUser.getId())));
     }
 
     @GetMapping
@@ -60,9 +66,10 @@ public class OrderController {
     @DeleteMapping("/{orderId}/cancel")
     public ResponseEntity<ApiResponseDto<Void>> cancelOrder(
             @PathVariable Long orderId,
-            @RequestParam String cancelReason
+            @RequestParam String cancelReason,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        orderService.cancelOrder(orderId, cancelReason);
+        orderService.cancelOrder(sessionUser.getId(), orderId, cancelReason);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }

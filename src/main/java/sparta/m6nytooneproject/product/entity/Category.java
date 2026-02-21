@@ -1,4 +1,4 @@
-package sparta.m6nytooneproject.product.enums;
+package sparta.m6nytooneproject.product.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
