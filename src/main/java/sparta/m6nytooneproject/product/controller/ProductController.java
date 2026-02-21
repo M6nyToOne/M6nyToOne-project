@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.product.dto.*;
 import sparta.m6nytooneproject.product.enums.Category;
 import sparta.m6nytooneproject.product.enums.Status;
@@ -20,43 +21,61 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping("/users/{userId}/products")
-    public ResponseEntity<ProductResponseDto> createProduct(@PathVariable Long userId, @Valid @RequestBody ProductRequestDto request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(userId, request));
+    public ResponseEntity<ApiResponseDto<ProductResponseDto>> createProduct(
+            @PathVariable Long userId,
+            @Valid @RequestBody ProductRequestDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponseDto.success(productService.createProduct(userId, request)));
     }
 
     @GetMapping("/products")
-    public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
+    public ResponseEntity<ApiResponseDto<Page<ProductResponseDto>>> getAllProducts(
             @RequestParam(required = false) String productName,
             @RequestParam(required = false) Category category,
             @RequestParam(required = false) Status status,
             @PageableDefault Pageable pageable
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts(pageable, productName, category, status));
+        return ResponseEntity.ok(ApiResponseDto.success(productService.getAllProducts(pageable, productName, category, status)));
     }
 
     @GetMapping("/products/{productId}")
-    public ResponseEntity<GetOneProductResponseDto> getOneProduct(@PathVariable Long productId) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getOneProduct(productId));
+    public ResponseEntity<ApiResponseDto<GetOneProductResponseDto>> getOneProduct(
+            @PathVariable Long productId
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(productService.getOneProduct(productId)));
     }
 
     @PatchMapping ("/products/{productId}")
-    public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable Long productId, @Valid @RequestBody UpdateProductRequestDto request) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(productId, request));
+    public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProduct(
+            @PathVariable Long productId,
+            @Valid @RequestBody UpdateProductRequestDto request
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(productService.updateProduct(productId, request)));
     }
 
-    @PatchMapping("/products/{productId}/stock")
-    public ResponseEntity<ProductResponseDto> updateProductStock(@PathVariable Long productId, @Valid @RequestBody UpdateProductStockRequestDto request){
-        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStock(productId, request.getStock()));
+    @PatchMapping("/products/{productId}/stocks")
+    public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProductStock(
+            @PathVariable Long productId,
+            @Valid @RequestBody UpdateProductStockRequestDto request
+    ){
+        return ResponseEntity
+                .ok(ApiResponseDto.success(productService.updateProductStock(productId, request.getStock())));
     }
 
     @PatchMapping("/products/{productId}/status")
-    public ResponseEntity<ProductResponseDto> updateProductStatus(@PathVariable Long productId, @Valid @RequestBody UpdateProductStatusRequestDto request){
-        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductStatus(productId, request));
+    public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProductStatus(
+            @PathVariable Long productId,
+            @Valid @RequestBody UpdateProductStatusRequestDto request
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(productService.updateProductStatus(productId, request)));
     }
 
     @DeleteMapping("/products/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId){
+    public ResponseEntity<ApiResponseDto<Void>> deleteProduct(
+            @PathVariable Long productId
+    ) {
         productService.deleteProduct(productId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }

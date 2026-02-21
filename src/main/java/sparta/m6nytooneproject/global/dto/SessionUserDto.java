@@ -5,14 +5,14 @@ import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
 
 @Getter
-public class SessionUser {
+public class SessionUserDto {
     private final Long id;
     private final String userName;
     private final String email;
     private final String password;
     private final SignupStatus signupStatus;
 
-    public SessionUser(User user) {
+    public SessionUserDto(User user) {
         this.id = user.getId();
         this.userName = user.getUserName();
         this.email = user.getEmail();
