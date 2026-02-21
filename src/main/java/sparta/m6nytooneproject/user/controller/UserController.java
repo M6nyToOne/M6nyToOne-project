@@ -3,7 +3,6 @@ package sparta.m6nytooneproject.user.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.sql.Update;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -98,7 +97,7 @@ public class UserController {
     }
 
     // 슈퍼관리자가 등록된 관리자들 정보 수정 (업데이트) - 이름, 이메일, 전화번호 수정 가능
-    @PatchMapping("/registered/{userId}")
+    @PatchMapping("/registered/{userId}/info")
     public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateUserInfo(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateUserInfoRequestDto request
@@ -107,7 +106,7 @@ public class UserController {
     }
 
     // 슈퍼 관리자가 다른 관리자의 역할 변경 (업데이트)
-    @PatchMapping("/registered/{userId}")
+    @PatchMapping("/registered/{userId}/status")
     public ResponseEntity<ApiResponseDto<UpdateRegisteredUserResponseDto>> updateRegisteredUser(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateRegisteredRequestDto request
