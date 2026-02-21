@@ -80,10 +80,10 @@ public class ProductService {
         Product product = getProductById(productId);
         // 평균 평점
         List<Review> reviews = reviewRepository.findAllReviewByProductId(productId);
-        List<Integer> reviewRates = reviews.stream().map(Review::getReviewRate).toList();
-        if (reviewRates.isEmpty()) {
+        if (reviews.isEmpty()) {
             return new GetOneProductResponseDto(product, null, 0, null, null);
         }
+        List<Integer> reviewRates = reviews.stream().map(Review::getReviewRate).toList();
         int sum = reviewRates.stream().mapToInt(Integer::intValue).sum();
         String averageRate = String.format("%.1f", (double) sum / reviewRates.size());
         // 전체 리뷰 개수
