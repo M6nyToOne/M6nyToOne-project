@@ -85,7 +85,7 @@ public class ProductService {
         }
         List<Integer> reviewRates = reviews.stream().map(Review::getReviewRate).toList();
         int sum = reviewRates.stream().mapToInt(Integer::intValue).sum();
-        String averageRate = String.format("%.1f", (double) sum / reviewRates.size());
+        String averageRate = String.format("%.1f", (double) sum / reviews.size());
         // 전체 리뷰 개수
         int reviewCount = reviews.size();
         // 별점별 개수
