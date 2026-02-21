@@ -1,4 +1,4 @@
-package sparta.m6nytooneproject.global.exception;
+package sparta.m6nytooneproject.global.exception.common;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
