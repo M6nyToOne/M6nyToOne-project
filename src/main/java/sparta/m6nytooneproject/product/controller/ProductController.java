@@ -10,8 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.product.dto.*;
-import sparta.m6nytooneproject.product.enums.Category;
-import sparta.m6nytooneproject.product.enums.Status;
+import sparta.m6nytooneproject.product.entity.Category;
+import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.service.ProductService;
 
 @RestController

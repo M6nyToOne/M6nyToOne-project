@@ -19,12 +19,10 @@ import sparta.m6nytooneproject.global.exception.common.SessionNotActiveException
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
 import sparta.m6nytooneproject.global.exception.product.ProductNotOnSaleException;
 import sparta.m6nytooneproject.product.entity.Product;
-import sparta.m6nytooneproject.product.enums.Status;
-import sparta.m6nytooneproject.product.repository.ProductRepository;
+import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.service.ProductService;
 import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
-import sparta.m6nytooneproject.user.repository.UserRepository;
 import sparta.m6nytooneproject.user.service.UserService;
 
 import java.util.List;

@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
-import sparta.m6nytooneproject.product.enums.Category;
-import sparta.m6nytooneproject.product.enums.Status;
 import sparta.m6nytooneproject.user.entity.User;
 
 
@@ -64,16 +62,6 @@ public class Product extends BaseEntity {
         this.stock = stock;
     }
 
-    public void updateProductStockAndStatus(int stock) {
-        if (this.stock <= SOLD_OUT_VALUE) {
-            this.stock = SOLD_OUT_VALUE;
-            this.status = Status.SOLD_OUT;
-        } else {
-            this.stock = stock;
-            this.status = Status.ON_SALE;
-        }
-    }
-
     public void discontinuedProduct() {
         this.stock = SOLD_OUT_VALUE;
         this.status = Status.DISCONTINUED;
@@ -82,6 +70,10 @@ public class Product extends BaseEntity {
     public void soldOutProduct() {
         this.stock = SOLD_OUT_VALUE;
         this.status = Status.SOLD_OUT;
+    }
+
+    public void onSaleProduct() {
+        this.status = Status.ON_SALE;
     }
 
 

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import sparta.m6nytooneproject.product.enums.Category;
+import sparta.m6nytooneproject.product.entity.Category;
 
 @Getter
 public class UpdateProductRequestDto {

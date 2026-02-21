@@ -1,9 +1,8 @@
 package sparta.m6nytooneproject.product.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import sparta.m6nytooneproject.product.enums.Status;
+import sparta.m6nytooneproject.product.entity.Status;
 
 @Getter
 public class UpdateProductStatusRequestDto {
