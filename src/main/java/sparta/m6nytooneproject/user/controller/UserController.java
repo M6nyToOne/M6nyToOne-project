@@ -3,6 +3,7 @@ package sparta.m6nytooneproject.user.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.sql.Update;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,8 @@ import sparta.m6nytooneproject.user.service.UserService;
 public class UserController {
 
     private final UserService userService;
+
+    // ===== 3. 관리자 정보 관리 =====
 
     // 신규 관리자 회원가입 (회원가입시 승인대기 상태일 것 -> 슈퍼 관리자가 승인해줘야 로그인 가능)
     @PostMapping("/signup")
@@ -138,7 +141,45 @@ public class UserController {
     }
 
     // 내 프로필 수정 (고객 유저)
+    @PatchMapping("/me/update")
+    public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateMyInfo(
+            @Valid @RequestBody UpdateUserInfoRequestDto request,
+            HttpSession session
+    ) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        if (sessionUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
+        }
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateMyInfo(sessionUser.getId(), request)));
+    }
 
     // 내 비밀번호 변경 (고객 유저)
+    @PatchMapping("/me/password")
+    public ResponseEntity<ApiResponseDto<UpdateMyPasswordResponseDto>> updateMyPassword(
+            @RequestBody UpdateMyPasswordRequestDto request,
+            HttpSession session
+    ) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        if (sessionUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
+        }
+        userService.changeMyPassword(sessionUser.getId(), request);
+        return ResponseEntity.ok().build();
+    }
+
+    // ===== 4. 고객 정보 관리 ======
+
+    // 플랫폼 이용하는 모든 고객 조회 (페이징)
+    @GetMapping("/customers")
+    public ResponseEntity<ApiResponseDto<Page<GetAllCustomerResponseDto>>> getAllCustomer(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getAllCustomer(page, size)));
+    }
+
+
 
 }

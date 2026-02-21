@@ -22,7 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 승인 대기 중인 관리자들만 조회
     Page<User> findByRoleInAndSignupStatus(Collection<UserRole> userRole, SignupStatus status, Pageable pageable);
 
-    // 관리자이면서 승인된 사람만 조회
+    // 관리자이면서(고객이 아니면서) 승인된 사람만 조회
     Page<User> findByRoleNotAndSignupStatus(UserRole role, SignupStatus status, Pageable pageable);
 
+    Page<User> findByRoleAndSignupStatus(UserRole role, SignupStatus signupStatus, Pageable pageable);
 }

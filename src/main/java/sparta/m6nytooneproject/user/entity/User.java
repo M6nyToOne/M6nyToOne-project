@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SoftDelete;
+import sparta.m6nytooneproject.config.PasswordEncoder;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
 
 @Getter
@@ -59,6 +60,10 @@ public class User extends BaseEntity {
         this.userName =userName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+    }
+
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 
 
