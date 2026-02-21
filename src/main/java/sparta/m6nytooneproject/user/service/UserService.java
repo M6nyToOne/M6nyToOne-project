@@ -1,6 +1,5 @@
 package sparta.m6nytooneproject.user.service;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +11,9 @@ import sparta.m6nytooneproject.config.PasswordEncoder;
 import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.dto.LoginRequestDto;
 import sparta.m6nytooneproject.global.dto.SessionUserDto;
-import sparta.m6nytooneproject.global.exception.*;
+import sparta.m6nytooneproject.global.exception.common.SessionNotActiveException;
+import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
+import sparta.m6nytooneproject.global.exception.user.*;
 import sparta.m6nytooneproject.user.dto.*;
 import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
@@ -120,10 +121,10 @@ public class UserService {
     public UserResponseDto getOneRegisteredUser(Long userId) {
         User user = getUserById(userId);
         if (user.getRole().equals(UserRole.CUSTOMER)) {
-            throw new UnAuthurizedException("관리자 계정이 아닙니다.");
+            throw new UnAuthorizedException("관리자 계정이 아닙니다.");
         }
         if (user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
-            throw new UnAuthurizedException("승인된 계정이 아닙니다.");
+            throw new UnAuthorizedException("승인된 계정이 아닙니다.");
         }
         return new UserResponseDto(user);
     }

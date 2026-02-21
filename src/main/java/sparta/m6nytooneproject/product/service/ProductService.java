@@ -5,8 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sparta.m6nytooneproject.global.exception.ProductNotFoundException;
-import sparta.m6nytooneproject.global.exception.UserNotFoundException;
+import sparta.m6nytooneproject.global.exception.product.ProductNotFoundException;
 import sparta.m6nytooneproject.product.dto.*;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.enums.Category;
@@ -15,7 +14,7 @@ import sparta.m6nytooneproject.product.repository.ProductRepository;
 import sparta.m6nytooneproject.review.entity.Review;
 import sparta.m6nytooneproject.review.repository.ReviewRepository;
 import sparta.m6nytooneproject.user.entity.User;
-import sparta.m6nytooneproject.user.repository.UserRepository;
+import sparta.m6nytooneproject.user.service.UserService;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
@@ -28,14 +27,12 @@ import java.util.Map;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final ReviewRepository reviewRepository;
 
     @Transactional
     public ProductResponseDto createProduct(Long userId, ProductRequestDto request) {
-        User admin = userRepository.findById(userId).orElseThrow(
-                () -> new UserNotFoundException("존재하지 않는 유저 입니다.")
-        );
+        User admin = userService.getUserById(userId);
         Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), admin);
         Product savedProduct = productRepository.save(product);
         return new ProductResponseDto(savedProduct);
@@ -89,17 +86,12 @@ public class ProductService {
         // 전체 리뷰 개수
         int reviewCount = reviews.size();
         // 별점별 개수
-        int fiveRateReviewCount = reviewRepository.find5rateReviewByProductId(productId).size();
-        int fourRateReviewCount = reviewRepository.find4rateReviewByProductId(productId).size();
-        int threeRateReviewCount = reviewRepository.find3rateReviewByProductId(productId).size();
-        int twoRateReviewCount = reviewRepository.find2rateReviewByProductId(productId).size();
-        int oneRateReviewCount = reviewRepository.find1rateReviewByProductId(productId).size();
         Map<Integer, Integer> rating = new HashMap<>();
-        rating.put(5, fiveRateReviewCount);
-        rating.put(4, fourRateReviewCount);
-        rating.put(3, threeRateReviewCount);
-        rating.put(2, twoRateReviewCount);
-        rating.put(1, oneRateReviewCount);
+        rating.put(5, reviewRepository.findRateReviewByProductId(productId, 5).size());
+        rating.put(4, reviewRepository.findRateReviewByProductId(productId, 4).size());
+        rating.put(3, reviewRepository.findRateReviewByProductId(productId, 3).size());
+        rating.put(2, reviewRepository.findRateReviewByProductId(productId, 2).size());
+        rating.put(1, reviewRepository.findRateReviewByProductId(productId, 1).size());
         ObjectMapper mapper = new ObjectMapper();
         String ratingCounts = mapper.writeValueAsString(rating);
         // 최신 리뷰
