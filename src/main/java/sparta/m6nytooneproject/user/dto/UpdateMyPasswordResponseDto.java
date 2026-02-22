@@ -17,7 +17,7 @@ public class UpdateMyPasswordResponseDto {
     private final UserRole userRole;
     private final SignupStatus signupStatus;
     private final LocalDateTime createdAt;
-    private final LocalDateTime modifiedAt;
+    private final LocalDateTime approvedAt;
 
     public UpdateMyPasswordResponseDto(User user) {
         this.id = user.getId();
@@ -27,6 +27,6 @@ public class UpdateMyPasswordResponseDto {
         this.userRole = user.getRole();
         this.signupStatus = user.getSignupStatus();
         this.createdAt = user.getCreatedAt();
-        this.modifiedAt = user.getModifiedAt();
+        this.approvedAt = user.getApprovedAt();
     }
 }

@@ -64,71 +64,89 @@ public class UserController {
     @GetMapping("/pendings")
     public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getPendingUsers(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getPendingUsers(page, size)));
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getPendingUsers(page, size, sessionUser)));
     }
 
     // 슈퍼 관리자가 승인 대기중인 관리자 상태 변경 (상태 업데이트) / 각 종 상태 변경
     @PatchMapping("/pendings/{userId}")
     public ResponseEntity<ApiResponseDto<UpdateUserStatusResponseDto>> updatePendingUser(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserStatusRequestDto request
+            @Valid @RequestBody UpdateUserStatusRequestDto request,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request)));
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request, sessionUser)));
     }
 
     // 슈퍼 관리자가 등록된 전체 관리자 조회
     @GetMapping("/registered")
     public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getRegisteredUsers(
             @RequestParam int page,
-            @RequestParam int size
+            @RequestParam int size,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getRegisteredUsers(page, size)));
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getRegisteredUsers(page, size, sessionUser)));
 
     }
 
     // 슈퍼 관리자가 등록된 관리자 상세 조회 (단 건 조회)
     @GetMapping("/registered/{userId}")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> getOneRegisteredUser(
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneRegisteredUser(userId)));
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneRegisteredUser(userId,sessionUser)));
     }
 
     // 슈퍼관리자가 등록된 관리자들 정보 수정 (업데이트) - 이름, 이메일, 전화번호 수정 가능
     @PatchMapping("/registered/{userId}/info")
     public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateUserInfo(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserInfoRequestDto request
+            @Valid @RequestBody UpdateUserInfoRequestDto request,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateUserInfo(userId, request)));
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateUserInfo(userId, request, sessionUser)));
     }
 
     // 슈퍼 관리자가 다른 관리자의 역할 변경 (업데이트)
     @PatchMapping("/registered/{userId}/status")
     public ResponseEntity<ApiResponseDto<UpdateRegisteredUserResponseDto>> updateRegisteredUser(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateRegisteredRequestDto request
+            @Valid @RequestBody UpdateRegisteredRequestDto request,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateRegisteredUser(userId, request)));
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateRegisteredUser(userId, request, sessionUser)));
     }
 
     // 슈퍼 관리자가 특정 관리자 삭제(탈퇴)
-    @PatchMapping("/registered/{userId}")
+    @DeleteMapping("/registered/{userId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteUser(
             @PathVariable Long userId,
-            UserRole userRole
+            HttpSession session
     ) {
-        // 고객 계정을 함부로 삭제 하면 안 됨..아 필요한가 이거?
-        if (userRole.equals(UserRole.CUSTOMER)) {
-            throw new IllegalStateException("해당 계정은 고객 계정입니다.");
-        }
-        userService.deleteUser(userId);
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+
+        userService.deleteUser(userId, sessionUser);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 
-    // 내 프로필 조회 (고객 유저)
+    // 내 프로필 조회 (관리자 자신)
     @GetMapping("/me")
     public ResponseEntity<ApiResponseDto<GetUserResponseDto>> getMyInfo(HttpSession session) {
         SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
@@ -139,7 +157,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDto.success(userService.getMyInfo(sessionUser.getId())));
     }
 
-    // 내 프로필 수정 (고객 유저)
+    // 내 프로필 수정 (관리자 자신)
     @PatchMapping("/me/update")
     public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateMyInfo(
             @Valid @RequestBody UpdateUserInfoRequestDto request,
@@ -153,10 +171,10 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDto.success(userService.updateMyInfo(sessionUser.getId(), request)));
     }
 
-    // 내 비밀번호 변경 (고객 유저)
+    // 내 비밀번호 변경 (관리자 자신)
     @PatchMapping("/me/password")
     public ResponseEntity<ApiResponseDto<UpdateMyPasswordResponseDto>> updateMyPassword(
-            @RequestBody UpdateMyPasswordRequestDto request,
+            @Valid @RequestBody UpdateMyPasswordRequestDto request,
             HttpSession session
     ) {
         SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
@@ -165,7 +183,7 @@ public class UserController {
                     .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
         }
         userService.changeMyPassword(sessionUser.getId(), request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponseDto.successWithNoContent());
     }
 
     // ===== 4. 고객 정보 관리 ======
@@ -174,11 +192,47 @@ public class UserController {
     @GetMapping("/customers")
     public ResponseEntity<ApiResponseDto<Page<GetAllCustomerResponseDto>>> getAllCustomer(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getAllCustomer(page, size)));
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getAllCustomer(page, size, sessionUser)));
     }
 
+    // 고객 정보 상세 조회
+    @GetMapping("/customers/{userId}")
+    public ResponseEntity<ApiResponseDto<GetOneCustomerResponseDto>> getOneCustomer(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneCustomer(userId, sessionUser)));
+    }
 
+    // 고객 정보 수정
+    @PatchMapping("/customers/{userId}")
+    public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerInfo(
+        @PathVariable Long userId,
+        @RequestBody UpdateUserInfoRequestDto request,
+        HttpSession session
+    ) {
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomer(userId, request, sessionUser)));
+    }
+
+    // 고객 상태 변경
+    @PatchMapping("/customers/{userId}")
+    public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerStatus(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateUserStatusRequestDto request,
+            HttpSession session
+    ) {
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomerStatus(userId, request, sessionUser)));
+    }
 
 }

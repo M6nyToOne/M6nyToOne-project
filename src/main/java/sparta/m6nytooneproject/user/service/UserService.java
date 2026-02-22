@@ -1,5 +1,7 @@
 package sparta.m6nytooneproject.user.service;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,27 @@ public class UserService {
     User superAdmin = new User("이승현", "${SUPER_ADMIN_EMAIL}", "${SUPER_ADMIN_PASSWORD}",
                      "${SUPER_ADMIN_PHONE-NUMBER}",UserRole.SUPER_ADMIN);
 
+    // 슈퍼 관리자 맞는지 검증
+    public void isSuperAdmin(SessionUserDto sessionUser) {
+        isAdmin(sessionUser);
+        // TODO: 예외 이름 생성 필요
+        if (!sessionUser.getUserRole().equals(UserRole.SUPER_ADMIN)) {
+            throw new IllegalStateException("슈퍼 관리자 권한이 필요합니다.");
+        }
+    }
+
+    // 그냥 관리자들이 맞는 지 검증
+    public void isAdmin(SessionUserDto sessionUser) {
+        if (sessionUser == null) {
+            throw new UnAuthorizedException("세션이 존재하지 않습니다.");
+        }
+        // TODO: 예외 이름 생성 필요
+        if (!sessionUser.getUserRole().equals(UserRole.CUSTOMER)) {
+            throw new IllegalStateException("관리자 권한이 필요합니다.");
+        }
+    }
+
+    // 회원가입
     @Transactional // 쓰기모드
     public UserResponseDto createUser(UserRequestDto requestDto) {
         // 회원가입 시 이메일 중복 확인
@@ -66,7 +89,7 @@ public class UserService {
     public SessionUserDto login(LoginRequestDto request) {
         // 이메일이 유효한지
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
-                () -> new AlreadyLoginUserException("이미 로그인되어있는 유저입니다.")
+                () -> new UserNotFoundException("존재하지 않는 이메일입니다.")
         );
         // 비밀번호가 일치하는지
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -86,7 +109,8 @@ public class UserService {
     }
 
     // 슈퍼 관리자가 승인대기중인 관리자 전체조회
-    public Page<UserResponseDto> getPendingUsers(int page, int size) {
+    public Page<UserResponseDto> getPendingUsers(int page, int size, SessionUserDto sessionUser) {
+        isSuperAdmin(sessionUser);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return userRepository.findByRoleInAndSignupStatus(
                 List.of(UserRole.SUPER_ADMIN, UserRole.OPER_ADMIN, UserRole.MARKET_ADMIN, UserRole.CS_ADMIN),
@@ -97,33 +121,36 @@ public class UserService {
 
     // 슈퍼 관리자가 승인대기중인 관리자 승인(업데이트) / 각종 상태 변경
     @Transactional
-    public UpdateUserStatusResponseDto updatePendingUser(Long userId, UpdateUserStatusRequestDto request) {
+    public UpdateUserStatusResponseDto updatePendingUser(Long userId, UpdateUserStatusRequestDto request, SessionUserDto sessionUser) {
+        isSuperAdmin(sessionUser);
         User user = getUserById(userId);
         // 슈퍼 관리자가 승인대기 상태를 활성/거부 상태로 업데이트
         // 거부 사유가 null이 아니면 거부 상태로 변경
-        if (request.getRejectMessage() != null) {
-            user.setSignupStatus(SignupStatus.REJECTED);
-            return new UpdateUserStatusResponseDto(user);
+        String reason = request.getRejectMessage();
+        if (reason != null && !reason.isBlank()) {
+            user.reject(reason);
         }
         // null이라면 활성 상태로 변경
-        user.setSignupStatus(SignupStatus.ACTIVE);
+        user.approve();
         return new UpdateUserStatusResponseDto(user);
     }
 
     // 등록된 관리자 전체 조회
-    public Page<UserResponseDto> getRegisteredUsers(int page, int size) {
+    public Page<UserResponseDto> getRegisteredUsers(int page, int size, SessionUserDto sessionUser) {
+        isSuperAdmin(sessionUser);
         Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
         Page<User> users = userRepository.findByRoleNotAndSignupStatus(UserRole.CUSTOMER, SignupStatus.ACTIVE, pageable);
         return users.map(UserResponseDto::new);
     }
 
-    // 등록된 관리자 상제 조회 (단 건 조회)
-    public UserResponseDto getOneRegisteredUser(Long userId) {
+    // 등록된 관리자 상세 조회 (단 건 조회)
+    public UserResponseDto getOneRegisteredUser(Long userId, SessionUserDto sessionUser) {
+        isSuperAdmin(sessionUser);
         User user = getUserById(userId);
         if (user.getRole().equals(UserRole.CUSTOMER)) {
             throw new UnAuthorizedException("관리자 계정이 아닙니다.");
         }
-        if (user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
+        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
             throw new UnAuthorizedException("승인된 계정이 아닙니다.");
         }
         return new UserResponseDto(user);
@@ -132,7 +159,8 @@ public class UserService {
     // 등록된 관리자 정보 수정
     // TODO: 슈퍼관리자가 다른 관리자 수정하는거니까 비번 검증 필요없나?
     @Transactional
-    public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto request) {
+    public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto request, SessionUserDto sessionUser) {
+        isSuperAdmin(sessionUser);
         User user = getUserById(userId);
         user.updateUserInfo(
                 request.getUserName(),
@@ -144,7 +172,8 @@ public class UserService {
 
     // 등록된 관리자 역할 변경
     @Transactional
-    public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto request) {
+    public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto request, SessionUserDto sessionUser) {
+        isSuperAdmin(sessionUser);
         User user = getUserById(userId);
         if (request.getUserRole().equals(user.getRole())) {
             throw new AlreadySameRoleException("이미 해당 역할입니다.");
@@ -154,30 +183,30 @@ public class UserService {
     }
 
     // 등록된 관리자 삭제
-
     @Transactional
-    public void deleteUser(Long userId) {
-        boolean existence = userRepository.existsById(userId);
-        if (!existence) {
-            throw new UserNotFoundException("존재하지 않는 유저입니다.");
+    public void deleteUser(Long userId, SessionUserDto sessionUser) {
+        isSuperAdmin(sessionUser);
+        User user = getUserById(userId);
+        if (user.getRole().equals(UserRole.CUSTOMER)) {
+            throw new CannotDeleteCustomerIdException("해당 계정은 고객 계정입니다.");
         }
         userRepository.deleteById(userId);
     }
-    // 해당 유저id가 존재하는지 확인하는 메서드
 
+    // 해당 유저id가 존재하는지 확인하는 메서드
     public User getUserById(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new UserNotFoundException("존재하지 않는 유저입니다.")
         );
     }
 
-    // 내 프로필 조회
+    // 내 프로필 조회 (관리자 자신)
     public GetUserResponseDto getMyInfo(Long userId) {
         User user = getUserById(userId);
         return new GetUserResponseDto(user);
     }
 
-    // 내 프로필 수정 (이름, 이메일, 전화번호), 비번이 일치해야 수정할 수 있게.
+    // 내 프로필 수정 (관리자 자신의 이름, 이메일, 전화번호), 비번이 일치해야 수정할 수 있게.
     @Transactional
     public UpdateUserInfoResponseDto updateMyInfo(Long userId, UpdateUserInfoRequestDto request) {
         User user = getUserById(userId);
@@ -185,6 +214,7 @@ public class UserService {
         return new UpdateUserInfoResponseDto(user);
     }
 
+    // 내 비밀번호 변경 (관리자 자신)
     // TODO: 기존비밀번호와 동일했을때의 에러 수정 필요
     @Transactional
     public void changeMyPassword(Long userId, UpdateMyPasswordRequestDto request) {
@@ -201,11 +231,43 @@ public class UserService {
     // ===== 4. 고객 정보 관리 =====
 
     // 고객 전체조회 (페이징)
-    public Page<GetAllCustomerResponseDto> getAllCustomer(int page, int size) {
+    public Page<GetAllCustomerResponseDto> getAllCustomer(int page, int size, SessionUserDto sessionUser) {
+        isAdmin(sessionUser);
         Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
         Page<User> users = userRepository.findByRoleAndSignupStatus(UserRole.CUSTOMER, SignupStatus.ACTIVE, pageable);
         return users.map(GetAllCustomerResponseDto::new);
     }
 
-    // 내 비밀변호 변경
+    // 고객 상세 조회
+    public GetOneCustomerResponseDto getOneCustomer(Long userId, SessionUserDto sessionUser) {
+        isAdmin(sessionUser);
+        User user = getUserById(userId);
+        return new GetOneCustomerResponseDto(user);
+    }
+
+    // 고객 정보 수정
+    @Transactional
+    public UpdateCustomerInfoResponseDto updateCustomer(Long userId, UpdateUserInfoRequestDto request, SessionUserDto sessionUser) {
+        isAdmin(sessionUser);
+        User user = getUserById(userId);
+        user.updateUserInfo(request.getUserName(), request.getEmail(), request.getPhoneNumber());
+        return new UpdateCustomerInfoResponseDto(user);
+    }
+
+    // 고객 상태 변경
+    @Transactional
+    public UpdateCustomerInfoResponseDto updateCustomerStatus(Long userId, UpdateUserStatusRequestDto request, SessionUserDto sessionUser) {
+        isAdmin(sessionUser);
+        SignupStatus target = request.getSignupStatus();
+        User user = getUserById(userId);
+
+        if (target == SignupStatus.PENDING || target == SignupStatus.REJECTED) {
+            throw new IllegalStateException("고객은 해당 상태로 변경이 불가능합니다.");
+        }
+        if (user.getSignupStatus() == target) {
+            throw new IllegalStateException("이미 동일한 상태입니다.");
+        }
+        user.updateSignupStatus(target);
+        return new UpdateCustomerInfoResponseDto(user);
+    }
 }
