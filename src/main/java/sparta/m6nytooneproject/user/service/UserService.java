@@ -256,7 +256,7 @@ public class UserService {
 
     // 고객 상태 변경
     @Transactional
-    public UpdateCustomerInfoResponseDto updateCustomerStatus(Long userId, UpdateUserStatusRequestDto request, SessionUserDto sessionUser) {
+    public UpdateCustomerInfoResponseDto updateCustomerStatus(Long userId, UpdateCustomerStatusRequestDto request, SessionUserDto sessionUser) {
         isAdmin(sessionUser);
         SignupStatus target = request.getSignupStatus();
         User user = getUserById(userId);
@@ -269,5 +269,16 @@ public class UserService {
         }
         user.updateSignupStatus(target);
         return new UpdateCustomerInfoResponseDto(user);
+    }
+
+    // 고객 삭제
+    @Transactional
+    public void deleteCustomer(Long userId, SessionUserDto sessionUser) {
+        isAdmin(sessionUser);
+        User user = getUserById(userId);
+        if (!user.getRole().equals(UserRole.CUSTOMER)) {
+            throw new IllegalStateException("고객 계정이 아닙니다.");
+        }
+        userRepository.deleteById(userId);
     }
 }

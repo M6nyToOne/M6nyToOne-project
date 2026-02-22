@@ -43,7 +43,6 @@ public class User extends BaseEntity {
     // 거부 사유
     private String rejectReason;
 
-    // setter로 상태 변경...?
     @Setter
     @Enumerated(EnumType.STRING)
     private SignupStatus signupStatus;

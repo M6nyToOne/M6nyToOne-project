@@ -227,7 +227,7 @@ public class UserController {
     @PatchMapping("/customers/{userId}")
     public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerStatus(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserStatusRequestDto request,
+            @Valid @RequestBody UpdateCustomerStatusRequestDto request,
             HttpSession session
     ) {
         SessionUserDto sessionUser =
@@ -235,4 +235,15 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomerStatus(userId, request, sessionUser)));
     }
 
+    // 고객 삭제
+    @DeleteMapping("/customers/{userId}")
+    public ResponseEntity<ApiResponseDto<Void>> deleteCustomer(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+        SessionUserDto sessionUser =
+                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+        userService.deleteCustomer(userId, sessionUser);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
+    }
 }
