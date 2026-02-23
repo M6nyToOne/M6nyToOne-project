@@ -13,6 +13,7 @@ import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.order.dto.*;
+import sparta.m6nytooneproject.order.entity.OrderSort;
 import sparta.m6nytooneproject.order.service.OrderService;
 
 @RestController
@@ -49,9 +50,10 @@ public class OrderController {
             @RequestParam(required = false) String username,
             @RequestParam(required = false) Long orderId,
             @RequestParam int page,
-            @RequestParam int size
+            @RequestParam int size,
+            @RequestParam OrderSort orderSort
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(page,size ,username ,orderId)));
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(page, size,orderSort, username ,orderId)));
     }
 
     @GetMapping("{orderId}")
@@ -72,10 +74,9 @@ public class OrderController {
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> updateOrderStatus(
             @PathVariable Long orderId,
-            @RequestBody @Valid updateOrderStatusDto status,
             @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(orderService.updateOrderStatus(orderId , status.getStatus(),sessionUser.getUserRole())));
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.updateOrderStatus(orderId,sessionUser.getUserRole())));
     }
 
     @DeleteMapping("/{orderId}/cancel")

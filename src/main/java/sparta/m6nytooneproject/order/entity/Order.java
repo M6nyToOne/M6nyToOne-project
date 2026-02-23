@@ -57,7 +57,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "admin_id")
     private User admin;
 
-    public void cancelOrder(String reason) {
+    public void setCancelOrder(String reason) {
         this.status = OrderStatus.CANCELLED;
         this.cancelReason = reason;
     }
@@ -66,8 +66,15 @@ public class Order extends BaseEntity {
         this.status = OrderStatus.COMPLETED;
     }
 
-    public void updateOrderStatus(OrderStatus orderStatus) {
-        this.status = orderStatus;
+    public void updateOrderStatus() {
+        switch (status) {
+            case PREPARED:
+                this.status = OrderStatus.DELIVERED;
+                break;
+            case DELIVERED:
+                this.status = OrderStatus.COMPLETED;
+                break;
+        }
     }
 
     public Order(int productPrice, int quantity, OrderStatus status, String productName , String userName, Product product , User customer , User admin) {
