@@ -2,8 +2,8 @@ package sparta.m6nytooneproject.product.dto;
 
 import lombok.Getter;
 import sparta.m6nytooneproject.product.entity.Product;
-import sparta.m6nytooneproject.product.enums.Category;
-import sparta.m6nytooneproject.product.enums.Status;
+import sparta.m6nytooneproject.product.entity.Category;
+import sparta.m6nytooneproject.product.entity.Status;
 
 import java.time.LocalDateTime;
 
