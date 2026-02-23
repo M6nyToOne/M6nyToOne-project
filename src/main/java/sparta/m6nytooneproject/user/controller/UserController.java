@@ -40,7 +40,7 @@ public class UserController {
             HttpSession session
     ) {
         SessionUserDto sessionUser = userService.login(request);
-        session.setAttribute("login_user", sessionUser);
+        session.setAttribute(AuthConstants.LOGIN_USER, sessionUser);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 
@@ -224,7 +224,7 @@ public class UserController {
     }
 
     // 고객 상태 변경
-    @PatchMapping("/customers/{userId}")
+    @PatchMapping("/customers/{userId}/status")
     public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerStatus(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateCustomerStatusRequestDto request,

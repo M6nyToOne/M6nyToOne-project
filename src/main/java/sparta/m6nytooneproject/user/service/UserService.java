@@ -54,7 +54,7 @@ public class UserService {
             throw new UnAuthorizedException("세션이 존재하지 않습니다.");
         }
         // TODO: 예외 이름 생성 필요
-        if (!sessionUser.getUserRole().equals(UserRole.CUSTOMER)) {
+        if (sessionUser.getUserRole().equals(UserRole.CUSTOMER)) {
             throw new IllegalStateException("관리자 권한이 필요합니다.");
         }
     }
@@ -112,7 +112,7 @@ public class UserService {
     // 슈퍼 관리자가 승인대기중인 관리자 전체조회
     public Page<UserResponseDto> getPendingUsers(int page, int size, SessionUserDto sessionUser) {
         isSuperAdmin(sessionUser);
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
         return userRepository.findByRoleInAndSignupStatus(
                 List.of(UserRole.SUPER_ADMIN, UserRole.OPER_ADMIN, UserRole.MARKET_ADMIN, UserRole.CS_ADMIN),
                 SignupStatus.PENDING,
@@ -130,9 +130,10 @@ public class UserService {
         String reason = request.getRejectMessage();
         if (reason != null && !reason.isBlank()) {
             user.reject(reason);
+        } else {
+            // null이라면 활성 상태로 변경
+            user.approve();
         }
-        // null이라면 활성 상태로 변경
-        user.approve();
         return new UpdateUserStatusResponseDto(user);
     }
 
@@ -158,7 +159,6 @@ public class UserService {
     }
 
     // 등록된 관리자 정보 수정
-    // TODO: 슈퍼관리자가 다른 관리자 수정하는거니까 비번 검증 필요없나?
     @Transactional
     public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto request, SessionUserDto sessionUser) {
         isSuperAdmin(sessionUser);

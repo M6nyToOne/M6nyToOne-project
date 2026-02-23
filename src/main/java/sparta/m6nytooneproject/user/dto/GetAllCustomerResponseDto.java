@@ -14,7 +14,6 @@ public class GetAllCustomerResponseDto {
     private final String userName;
     private final String email;
     private final String phoneNumber;
-    private final UserRole userRole;
     private final SignupStatus signupStatus;
     private final LocalDateTime createdAt;
 
@@ -23,7 +22,6 @@ public class GetAllCustomerResponseDto {
         this.userName = user.getUserName();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
-        this.userRole = user.getRole();
         this.signupStatus = user.getSignupStatus();
         this.createdAt = user.getCreatedAt();
     }

@@ -92,7 +92,7 @@ public class User extends BaseEntity {
             throw new IllegalStateException("승인 대기 상태가 아닙니다.");
         }
         if (reason == null || reason.isBlank()) {
-            throw new IllegalStateException("거부거부거부기~");
+            throw new IllegalStateException("거부사유는 필수입니다.");
         }
         signupStatus = SignupStatus.REJECTED;
         rejectedAt = LocalDateTime.now();
