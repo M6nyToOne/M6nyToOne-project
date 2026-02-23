@@ -23,7 +23,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Page<User> findByRoleAndSignupStatus(UserRole role, SignupStatus signupStatus, Pageable pageable);
 
-    // 고객수
+    // 활성 상태의 전체 관리자 수
+    long countByRoleNotAndSignupStatus(UserRole userRole, SignupStatus signupStatus);
 
-    // 관리자수
+    // 활성 상태의 전체 고객 수
+    long countByRoleAndSignupStatus(UserRole role, SignupStatus status);
+
 }

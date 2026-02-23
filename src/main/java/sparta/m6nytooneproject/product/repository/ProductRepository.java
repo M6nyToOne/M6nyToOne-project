@@ -22,5 +22,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategoryAndStatus(Category category, Status status, Pageable pageable);
 
     Page<Product> findByProductNameAndCategoryAndStatus(String productName, Category category, Status status, Pageable pageable);
+
+    // 재고가 5개 이하인 전체 상품 수
+    long countByStockLessThanEqual(int stock);
+
 }
 

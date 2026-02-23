@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import sparta.m6nytooneproject.order.dto.CustomerOrderSummaryDto;
 import sparta.m6nytooneproject.order.entity.Order;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,4 +42,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         GROUP BY o.customer.id
     """)
     Optional<CustomerOrderSummaryDto> summaryOneCustomerOrder(@Param("customerId")Long customerId);
+
+    // 전체 주문 수 (오늘 주문 수) 를 위한 메서드
+    long countByCreatedAtAfter(LocalDateTime localDateTime);
 }

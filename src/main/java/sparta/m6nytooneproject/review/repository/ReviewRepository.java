@@ -27,4 +27,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findRateReviewByProductId(Long productId, @Param("rate") int rate);
 
     List<Review> findTop3ByProductIdOrderByCreatedAtDesc(Long productId);
+
+    //  평균 평점 찾는 메서드
+    @Query("""
+        SELECT AVG(r.reviewRate)
+        FROM Review r
+    """)
+    Double findAverageRating();
 }

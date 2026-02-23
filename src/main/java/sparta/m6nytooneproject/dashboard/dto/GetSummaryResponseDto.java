@@ -9,9 +9,9 @@ public class GetSummaryResponseDto {
     private final Long customerCount;
     private final Long productCount;
     private final Long orderCount;
-    private final Long reviewCount;
+    private final Double reviewCount;
 
-    public GetSummaryResponseDto(Long adminCount, Long customerCount, Long productCount, Long orderCount, Long reviewCount) {
+    public GetSummaryResponseDto(Long adminCount, Long customerCount, Long productCount, Long orderCount, Double reviewCount) {
         this.adminCount = adminCount;
         this.customerCount = customerCount;
         this.productCount = productCount;
