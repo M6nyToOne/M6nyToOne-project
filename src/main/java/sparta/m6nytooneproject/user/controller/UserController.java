@@ -65,11 +65,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getPendingUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
-
         return ResponseEntity.ok(ApiResponseDto.success(userService.getPendingUsers(page, size, sessionUser)));
     }
 
@@ -78,10 +75,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateUserStatusResponseDto>> updatePendingUser(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateUserStatusRequestDto request,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request, sessionUser)));
     }
 
@@ -90,10 +85,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getRegisteredUsers(
             @RequestParam int page,
             @RequestParam int size,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.getRegisteredUsers(page, size, sessionUser)));
 
     }
@@ -102,10 +95,8 @@ public class UserController {
     @GetMapping("/registered/{userId}")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> getOneRegisteredUser(
             @PathVariable Long userId,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.getOneRegisteredUser(userId,sessionUser)));
     }
 
@@ -114,10 +105,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateUserInfo(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateUserInfoRequestDto request,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.updateUserInfo(userId, request, sessionUser)));
     }
 
@@ -126,10 +115,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateRegisteredUserResponseDto>> updateRegisteredUser(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateRegisteredRequestDto request,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.updateRegisteredUser(userId, request, sessionUser)));
     }
 
@@ -137,19 +124,17 @@ public class UserController {
     @DeleteMapping("/registered/{userId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteUser(
             @PathVariable Long userId,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
-
         userService.deleteUser(userId, sessionUser);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 
     // 내 프로필 조회 (관리자 자신)
     @GetMapping("/me")
-    public ResponseEntity<ApiResponseDto<GetUserResponseDto>> getMyInfo(HttpSession session) {
-        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
+    public ResponseEntity<ApiResponseDto<GetUserResponseDto>> getMyInfo(
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+    ) {
         if (sessionUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
@@ -161,9 +146,8 @@ public class UserController {
     @PatchMapping("/me/update")
     public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateMyInfo(
             @Valid @RequestBody UpdateUserInfoRequestDto request,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         if (sessionUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
@@ -175,9 +159,8 @@ public class UserController {
     @PatchMapping("/me/password")
     public ResponseEntity<ApiResponseDto<UpdateMyPasswordResponseDto>> updateMyPassword(
             @Valid @RequestBody UpdateMyPasswordRequestDto request,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         if (sessionUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
@@ -193,10 +176,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<Page<GetAllCustomerResponseDto>>> getAllCustomer(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.getAllCustomer(page, size, sessionUser)));
     }
 
@@ -204,10 +185,8 @@ public class UserController {
     @GetMapping("/customers/{userId}")
     public ResponseEntity<ApiResponseDto<GetOneCustomerResponseDto>> getOneCustomer(
             @PathVariable Long userId,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.getOneCustomer(userId, sessionUser)));
     }
 
@@ -216,10 +195,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerInfo(
         @PathVariable Long userId,
         @RequestBody UpdateUserInfoRequestDto request,
-        HttpSession session
+        @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomer(userId, request, sessionUser)));
     }
 
@@ -228,10 +205,8 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerStatus(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateCustomerStatusRequestDto request,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomerStatus(userId, request, sessionUser)));
     }
 
@@ -239,10 +214,8 @@ public class UserController {
     @DeleteMapping("/customers/{userId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteCustomer(
             @PathVariable Long userId,
-            HttpSession session
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        SessionUserDto sessionUser =
-                (SessionUserDto) session.getAttribute(AuthConstants.LOGIN_USER);
         userService.deleteCustomer(userId, sessionUser);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
