@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.global.exception.product.ProductNotFoundException;
+import sparta.m6nytooneproject.global.exception.product.ProductNotOnSaleException;
 import sparta.m6nytooneproject.product.dto.*;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.entity.Category;
@@ -14,6 +15,7 @@ import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
 import sparta.m6nytooneproject.review.entity.Review;
 import sparta.m6nytooneproject.review.repository.ReviewRepository;
+import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.service.UserService;
 import tools.jackson.databind.ObjectMapper;
@@ -32,10 +34,10 @@ public class ProductService {
     private final ReviewRepository reviewRepository;
 
     @Transactional
-    public ProductResponseDto createProduct(SessionUserDto sessionUser, ProductRequestDto request) {
-        User isAdmin = userService.getUserById(sessionUser.getId());
+    public ProductResponseDto createProduct(CustomUserDetails userDetails, ProductRequestDto request) {
+        User isAdmin = userService.getUserById(userDetails.getId());
 
-        userService.isAdmin(sessionUser);
+        userService.isAdmin(userDetails);
         Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), isAdmin);
 
         Product savedProduct = productRepository.save(product);
@@ -104,16 +106,16 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProduct(SessionUserDto sessionUser, Long productId, UpdateProductRequestDto request) {
-        userService.isAdmin(sessionUser);
+    public ProductResponseDto updateProduct(CustomUserDetails userDetails, Long productId, UpdateProductRequestDto request) {
+        userService.isAdmin(userDetails);
         Product product = getProductById(productId);
         product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
         return new ProductResponseDto(product);
     }
 
     @Transactional
-    public ProductResponseDto updateProductStock(SessionUserDto sessionUser, Long productId, int stock) {
-        userService.isAdmin(sessionUser);
+    public ProductResponseDto updateProductStock(CustomUserDetails userDetails, Long productId, int stock) {
+        userService.isAdmin(userDetails);
 
         Product product = getProductById(productId);
 
@@ -123,8 +125,8 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProductStatus(SessionUserDto sessionUser, Long productId, UpdateProductStatusRequestDto request) {
-        userService.isAdmin(sessionUser);
+    public ProductResponseDto updateProductStatus(CustomUserDetails userDetails, Long productId, UpdateProductStatusRequestDto request) {
+        userService.isAdmin(userDetails);
 
         Product product = getProductById(productId);
         setProductStatus(product);
@@ -161,8 +163,8 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(SessionUserDto sessionUser,Long productId) {
-        userService.isAdmin(sessionUser);
+    public void deleteProduct(CustomUserDetails userDetails, Long productId) {
+        userService.isAdmin(userDetails);
         Product product = getProductById(productId);
 
         product.discontinuedProduct();
@@ -181,13 +183,13 @@ public class ProductService {
         Product product = getProductById(productId);
         // 재고가 남아도 단종이면 주문 불가?
         if (product.getStatus() == Status.DISCONTINUED){
-            throw new IllegalStateException("단종된 상품입니다.");
+            throw new ProductNotOnSaleException("단종된 상품입니다.");
         }
         if (product.getStatus() == Status.SOLD_OUT){
-            throw new IllegalStateException("품절된 상품입니다.");
+            throw new ProductNotOnSaleException("품절된 상품입니다.");
         }
         if (product.getStock() < quantity){
-            throw new IllegalStateException("재고가 부족합니다.");
+            throw new ProductNotOnSaleException("재고가 부족합니다.");
         }
         return product;
     }
