@@ -22,23 +22,36 @@ import sparta.m6nytooneproject.order.service.OrderService;
 public class OrderController {
     private final OrderService orderService;
 
-    @PostMapping("/customers")
-    public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> createOrder(
-            @RequestBody @Valid OrderRequestDto request,
+    @PostMapping("/{cartId}/customers")
+    public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> createOrderByCustomer(
+            @RequestBody @Valid OrderRequestByCustomerDto request,
+            @PathVariable Long cartId,
             @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseDto.success(orderService.createOrderByCustomer(request ,sessionUser.getId())));
+                .body(ApiResponseDto.success(orderService.createOrderByCustomer(request, sessionUser.getId(), cartId)));
+    }
+
+    @PostMapping("/{customerId}/cs")
+    public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> createOrderByCs(
+            @RequestBody @Valid OrderRequestByCsDto request,
+            @PathVariable Long customerId,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+    ) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponseDto.success(orderService.createOrderByAdmin(request, customerId, sessionUser.getId())));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponseDto<Page<OrderListResponseDto>>> getAllOrders(
             @RequestParam(required = false) String username,
             @RequestParam(required = false) Long orderId,
-            @PageableDefault Pageable pageable
+            @RequestParam int page,
+            @RequestParam int size
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(pageable ,username ,orderId)));
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(page,size ,username ,orderId)));
     }
 
     @GetMapping("{orderId}")
@@ -50,17 +63,19 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/complete")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> completeOrder(
-            @PathVariable Long orderId
+            @PathVariable Long orderId,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(orderService.completeOrder(orderId)));
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.completeOrder(orderId ,sessionUser.getUserRole())));
     }
 
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> updateOrderStatus(
             @PathVariable Long orderId,
-            @RequestBody @Valid updateOrderStatusDto status
+            @RequestBody @Valid updateOrderStatusDto status,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(orderService.updateOrderStatus(orderId , status.getStatus())));
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.updateOrderStatus(orderId , status.getStatus(),sessionUser.getUserRole())));
     }
 
     @DeleteMapping("/{orderId}/cancel")
