@@ -46,12 +46,12 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<ApiResponseDto<Page<OrderListResponseDto>>> getAllOrders(
             @RequestParam(required = false) String username,
-            @RequestParam(required = false) Long orderId,
-            @RequestParam int page,
-            @RequestParam int size,
-            @RequestParam OrderSort orderSort
+            @RequestParam(required = false , defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "CREATED_AT")  OrderSort orderSort
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(page, size,orderSort, username ,orderId)));
+        log.info("getAllOrders called");
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(page, size,orderSort, username)));
     }
 
     @GetMapping("{orderId}")
@@ -83,7 +83,7 @@ public class OrderController {
             @RequestParam String cancelReason,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        orderService.cancelOrder(userDetails.getId(), orderId, cancelReason);
+        orderService.cancelOrder(userDetails, orderId, cancelReason);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }
