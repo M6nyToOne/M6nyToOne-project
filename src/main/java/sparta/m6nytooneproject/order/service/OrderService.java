@@ -3,21 +3,27 @@ package sparta.m6nytooneproject.order.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sparta.m6nytooneproject.cart.service.CartService;
+import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.exception.order.CancelOrderException;
 import sparta.m6nytooneproject.global.exception.order.OrderException;
 import sparta.m6nytooneproject.global.exception.order.OrderNotFoundException;
 import sparta.m6nytooneproject.order.dto.OrderDetailResponseDto;
 import sparta.m6nytooneproject.order.dto.OrderListResponseDto;
-import sparta.m6nytooneproject.order.dto.OrderRequestDto;
+import sparta.m6nytooneproject.order.dto.OrderRequestByCsDto;
+import sparta.m6nytooneproject.order.dto.OrderRequestByCustomerDto;
 import sparta.m6nytooneproject.order.entity.Order;
 import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.service.ProductService;
 import sparta.m6nytooneproject.user.entity.User;
+import sparta.m6nytooneproject.user.entity.UserRole;
 import sparta.m6nytooneproject.user.service.UserService;
 
 @Service
@@ -28,18 +34,16 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserService userService;
     private final ProductService productService;
-
+    private final CartService cartService;
 
     @Transactional
-    public OrderDetailResponseDto createOrderByCustomer(OrderRequestDto request, Long customerId) {
+    public OrderDetailResponseDto createOrderByCustomer(OrderRequestByCustomerDto request, Long customerId, Long cartId) {
         User customer = userService.getUserById(customerId);
 
-        // 고객이 주문하는게 맞는지 검증.
-        userService.checkValidCustomer(customer.getRole());
+        userService.validCustomer(customer.getRole());
 
         Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
 
-        // admin 없는 주문 생성.
         Order order = new Order(
                 validProduct.getPrice(),
                 request.getQuantity(),
@@ -50,7 +54,33 @@ public class OrderService {
                 customer
         );
         orderRepository.save(order);
-        //product 수량 조절 서비스 호출
+        productService.decreaseStock(validProduct, request.getQuantity());
+        cartService.deleteCart(cartId, customerId);
+
+        return OrderDetailResponseDto.from(order);
+    }
+
+    @Transactional
+    public OrderDetailResponseDto createOrderByAdmin(OrderRequestByCsDto request, Long customerId , Long adminId) {
+        User customer = userService.getUserById(customerId);
+        userService.validCustomer(customer.getRole());
+
+        User admin = userService.getUserById(adminId);
+        userService.validateIsAdmin(admin.getRole());
+
+        Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
+
+        Order order = new Order(
+                validProduct.getPrice(),
+                request.getQuantity(),
+                OrderStatus.PREPARED,
+                validProduct.getProductName(),
+                customer.getUserName(),
+                validProduct,
+                customer,
+                admin
+        );
+        orderRepository.save(order);
         productService.decreaseStock(validProduct, request.getQuantity());
         return OrderDetailResponseDto.from(order);
     }
@@ -76,20 +106,26 @@ public class OrderService {
         return OrderDetailResponseDto.from(order);
     }
 
-    public Page<OrderListResponseDto> getAllOrders(Pageable pageable , String username , Long getOrderId) {
+    public Page<OrderListResponseDto> getAllOrders(int page, int size, String username , Long getOrderId) {
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
+
         Page<Order> orders = orderRepository.search(username , getOrderId, pageable);
         return orders.map(OrderListResponseDto::from);
     }
 
     @Transactional
-    public OrderDetailResponseDto completeOrder(Long orderId) {
+    public OrderDetailResponseDto completeOrder(Long orderId, UserRole userRole) {
+        userService.validateIsAdmin(userRole);
+
         Order order = getOrderById(orderId);
         order.completeOrder();
         return OrderDetailResponseDto.from(order);
     }
 
     @Transactional
-    public OrderDetailResponseDto updateOrderStatus(Long orderId , OrderStatus orderStatus) {
+    public OrderDetailResponseDto updateOrderStatus(Long orderId , OrderStatus orderStatus, UserRole userRole) {
+        userService.validateIsAdmin(userRole);
+
         Order order = getOrderById(orderId);
         order.updateOrderStatus(orderStatus);
         return OrderDetailResponseDto.from(order);

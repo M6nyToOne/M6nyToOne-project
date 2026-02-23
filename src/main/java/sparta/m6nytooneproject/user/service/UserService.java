@@ -1,7 +1,5 @@
 package sparta.m6nytooneproject.user.service;
 
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +56,8 @@ public class UserService {
             throw new IllegalStateException("관리자 권한이 필요합니다.");
         }
     }
+
+
 
     // 회원가입
     @Transactional // 쓰기모드
@@ -284,9 +284,14 @@ public class UserService {
     }
     // 내 비밀변호 변경
 
-    // 고객이 맞는지 검증하는 메서드
-    public void checkValidCustomer(UserRole role){
+    public void validCustomer(UserRole role){
         if(!role.equals(UserRole.CUSTOMER)){
+            throw new UserRoleNotMatchException("권한이 올바르지 않습니다.");
+        }
+    }
+
+    public void validateIsAdmin(UserRole role) {
+        if(role.equals(UserRole.CUSTOMER)){
             throw new UserRoleNotMatchException("권한이 올바르지 않습니다.");
         }
     }
