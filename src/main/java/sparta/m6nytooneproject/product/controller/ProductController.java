@@ -8,28 +8,31 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
+import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.product.dto.*;
 import sparta.m6nytooneproject.product.entity.Category;
 import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.service.ProductService;
 
-@RestController
+@RestController("/products")
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping("/users/{userId}/products")
+    @PostMapping
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> createProduct(
-            @PathVariable Long userId,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser,
             @Valid @RequestBody ProductRequestDto request
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseDto.success(productService.createProduct(userId, request)));
+        ProductResponseDto result = productService.createProduct(sessionUser, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseDto.success(result));
     }
 
-    @GetMapping("/products")
+    @GetMapping
     public ResponseEntity<ApiResponseDto<Page<ProductResponseDto>>> getAllProducts(
             @RequestParam(required = false) String productName,
             @RequestParam(required = false) Category category,
@@ -39,43 +42,47 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponseDto.success(productService.getAllProducts(pageable, productName, category, status)));
     }
 
-    @GetMapping("/products/{productId}")
+    @GetMapping("/{productId}")
     public ResponseEntity<ApiResponseDto<GetOneProductResponseDto>> getOneProduct(
             @PathVariable Long productId
     ) {
         return ResponseEntity.ok(ApiResponseDto.success(productService.getOneProduct(productId)));
     }
 
-    @PatchMapping ("/products/{productId}")
+    @PatchMapping ("/{productId}")
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProduct(
             @PathVariable Long productId,
-            @Valid @RequestBody UpdateProductRequestDto request
+            @Valid @RequestBody UpdateProductRequestDto request,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(productService.updateProduct(productId, request)));
+        return ResponseEntity.ok(ApiResponseDto.success(productService.updateProduct(sessionUser, productId, request)));
     }
 
-    @PatchMapping("/products/{productId}/stocks")
+    @PatchMapping("/{productId}/stocks")
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProductStock(
             @PathVariable Long productId,
-            @Valid @RequestBody UpdateProductStockRequestDto request
+            @Valid @RequestBody UpdateProductStockRequestDto request,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ){
         return ResponseEntity
-                .ok(ApiResponseDto.success(productService.updateProductStock(productId, request.getStock())));
+                .ok(ApiResponseDto.success(productService.updateProductStock(sessionUser, productId, request.getStock())));
     }
 
-    @PatchMapping("/products/{productId}/status")
+    @PatchMapping("/{productId}/status")
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProductStatus(
             @PathVariable Long productId,
-            @Valid @RequestBody UpdateProductStatusRequestDto request
+            @Valid @RequestBody UpdateProductStatusRequestDto request,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(productService.updateProductStatus(productId, request)));
+        return ResponseEntity.ok(ApiResponseDto.success(productService.updateProductStatus(sessionUser, productId, request)));
     }
 
-    @DeleteMapping("/products/{productId}")
+    @DeleteMapping("/{productId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteProduct(
-            @PathVariable Long productId
+            @PathVariable Long productId,
+            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
     ) {
-        productService.deleteProduct(productId);
+        productService.deleteProduct(sessionUser, productId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }

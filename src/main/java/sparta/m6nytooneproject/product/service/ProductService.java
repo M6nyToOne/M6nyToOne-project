@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.global.exception.product.ProductNotFoundException;
 import sparta.m6nytooneproject.product.dto.*;
 import sparta.m6nytooneproject.product.entity.Product;
@@ -31,9 +32,12 @@ public class ProductService {
     private final ReviewRepository reviewRepository;
 
     @Transactional
-    public ProductResponseDto createProduct(Long userId, ProductRequestDto request) {
-        User admin = userService.getUserById(userId);
-        Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), admin);
+    public ProductResponseDto createProduct(SessionUserDto sessionUser, ProductRequestDto request) {
+        User isAdmin = userService.getUserById(sessionUser.getId());
+
+        userService.isAdmin(sessionUser);
+        Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), isAdmin);
+
         Product savedProduct = productRepository.save(product);
         return new ProductResponseDto(savedProduct);
     }
@@ -100,24 +104,39 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProduct(Long productId, UpdateProductRequestDto request) {
+    public ProductResponseDto updateProduct(SessionUserDto sessionUser, Long productId, UpdateProductRequestDto request) {
+        User isAdmin = userService.getUserById(sessionUser.getId());
+
+        userService.isAdmin(sessionUser);
         Product product = getProductById(productId);
         product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
         return new ProductResponseDto(product);
     }
 
     @Transactional
-    public ProductResponseDto updateProductStock(Long productId, int stock) {
-        // 상품 가져오고
+    public ProductResponseDto updateProductStock(SessionUserDto sessionUser, Long productId, int stock) {
+        User isAdmin = userService.getUserById(sessionUser.getId());
+
+        userService.isAdmin(sessionUser);
+
         Product product = getProductById(productId);
-        // 받은 수량으로 세팅
+
         product.updateProductStock(stock);
-        // 해당 메서드로 알아서 상태 관리.
         setProductStatus(product);
         return new ProductResponseDto(product);
     }
 
-    // 상태만 관리하는 메서드 분리 수량 관리는 따로.
+    @Transactional
+    public ProductResponseDto updateProductStatus(SessionUserDto sessionUser, Long productId, UpdateProductStatusRequestDto request) {
+        User isAdmin = userService.getUserById(sessionUser.getId());
+
+        userService.isAdmin(sessionUser);
+
+        Product product = getProductById(productId);
+        setProductStatus(product);
+        return new ProductResponseDto(product);
+    }
+
     @Transactional
     public void setProductStatus(Product product){
         int stock = product.getStock();
@@ -133,8 +152,8 @@ public class ProductService {
     }
 
     @Transactional
-    public void increaseStock(Product product, int decrementCount){
-        product.updateProductStock(product.getStock() + decrementCount);
+    public void increaseStock(Product product, int incrementCount){
+        product.updateProductStock(product.getStock() + incrementCount);
         setProductStatus(product);
     }
 
@@ -148,16 +167,12 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProductStatus(Long productId, UpdateProductStatusRequestDto request) {
-        Product product = getProductById(productId);
-        product.updateProductStatus(request.getStatus());
-        return new ProductResponseDto(product);
-    }
+    public void deleteProduct(SessionUserDto sessionUser,Long productId) {
+        User isAdmin = userService.getUserById(sessionUser.getId());
 
-    @Transactional
-    public void deleteProduct(Long productId) {
+        userService.isAdmin(sessionUser);
         Product product = getProductById(productId);
-        //삭제라는게 단종의 의미라면 이런식으로 작성 해야합니다.
+
         product.discontinuedProduct();
         productRepository.saveAndFlush(product);
 
