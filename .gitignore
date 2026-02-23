@@ -6,6 +6,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### SQL ###
+**/resources/data.sql
+**/main/java/sparta/m6nytooneproject/config/initializer/DataInitializer.java
+
 ### STS ###
 .apt_generated
 .classpath

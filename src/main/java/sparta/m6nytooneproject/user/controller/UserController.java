@@ -12,7 +12,6 @@ import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.global.dto.LoginRequestDto;
 import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.user.dto.*;
-import sparta.m6nytooneproject.user.entity.UserRole;
 import sparta.m6nytooneproject.user.service.UserService;
 
 @RestController

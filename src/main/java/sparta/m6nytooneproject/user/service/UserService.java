@@ -33,10 +33,6 @@ public class UserService {
 
     // ===== 3. 관리자 정보 관리 =====
 
-    // 슈퍼 관리자 계정
-    User superAdmin = new User("이승현", "${SUPER_ADMIN_EMAIL}", "${SUPER_ADMIN_PASSWORD}",
-                     "${SUPER_ADMIN_PHONE-NUMBER}",UserRole.SUPER_ADMIN);
-
     // 슈퍼 관리자 맞는지 검증
     public void isSuperAdmin(SessionUserDto sessionUser) {
         isAdmin(sessionUser);
