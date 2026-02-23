@@ -5,14 +5,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sparta.m6nytooneproject.config.PasswordEncoder;
 import sparta.m6nytooneproject.global.AuthConstants;
-import sparta.m6nytooneproject.global.dto.LoginRequestDto;
 import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.global.exception.user.UserRoleNotMatchException;
-import sparta.m6nytooneproject.global.exception.common.SessionNotActiveException;
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
 import sparta.m6nytooneproject.global.exception.user.*;
 import sparta.m6nytooneproject.order.dto.CustomerOrderSummaryDto;
@@ -87,27 +85,27 @@ public class UserService {
         // 슈퍼 관리자가 승인해야 됨.
     }
     // 로그인
-    public SessionUserDto login(LoginRequestDto request) {
-        // 이메일이 유효한지
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
-                () -> new UserNotFoundException("존재하지 않는 이메일입니다.")
-        );
-        // 비밀번호가 일치하는지
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnmatchPasswordException("비밀번호가 일치하지 않습니다.");
-        }
-        // 회원가입 상태가 활성되지 않았다면 예외
-        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
-            switch (user.getSignupStatus()) {
-                case PENDING -> throw new SessionNotActiveException("회원가입 승인 대기중입니다.");
-                case REJECTED -> throw new SessionNotActiveException("회원가입 신청이 거부되었습니다.");
-                case SUSPEND -> throw new SessionNotActiveException("계정이 정지되었습니다.");
-                case INACTIVE -> throw new SessionNotActiveException("계정이 비활성화 상태입니다.");
-            }
-        }
-        // 활성상태라면 로그인
-        return new SessionUserDto(user);
-    }
+//    public SessionUserDto login(LoginRequestDto request) {
+//        // 이메일이 유효한지
+//        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+//                () -> new UserNotFoundException("존재하지 않는 이메일입니다.")
+//        );
+//        // 비밀번호가 일치하는지
+//        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+//            throw new UnmatchPasswordException("비밀번호가 일치하지 않습니다.");
+//        }
+//        // 회원가입 상태가 활성되지 않았다면 예외
+//        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
+//            switch (user.getSignupStatus()) {
+//                case PENDING -> throw new SessionNotActiveException("회원가입 승인 대기중입니다.");
+//                case REJECTED -> throw new SessionNotActiveException("회원가입 신청이 거부되었습니다.");
+//                case SUSPEND -> throw new SessionNotActiveException("계정이 정지되었습니다.");
+//                case INACTIVE -> throw new SessionNotActiveException("계정이 비활성화 상태입니다.");
+//            }
+//        }
+//        // 활성상태라면 로그인
+//        return new SessionUserDto(user);
+//    }
 
     // 슈퍼 관리자가 승인대기중인 관리자 전체조회
     public Page<UserResponseDto> getPendingUsers(int page, int size, SessionUserDto sessionUser) {
