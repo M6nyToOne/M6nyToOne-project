@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.cart.dto.CartRequestDto;
@@ -14,6 +15,8 @@ import sparta.m6nytooneproject.cart.service.CartService;
 import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.global.dto.SessionUserDto;
+import sparta.m6nytooneproject.security.CustomUserDetails;
+
 import java.util.List;
 
 @RestController
@@ -28,9 +31,9 @@ public class CartController {
     @PostMapping
     public ResponseEntity<ApiResponseDto<CartResponseDto>> createCart(
             @Valid @RequestBody CartRequestDto request,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER, required = false) SessionUserDto loginUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CartResponseDto result = cartService.createCart(request, loginUser);
+        CartResponseDto result = cartService.createCart(request, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseDto.success(result));
     }
 
@@ -58,18 +61,18 @@ public class CartController {
     public ResponseEntity<ApiResponseDto<CartResponseDto>> updateCart(
             @PathVariable Long cartId,
             @Valid @RequestBody CartRequestDto request,
-            @SessionAttribute(name= AuthConstants.LOGIN_USER, required = false) SessionUserDto loginUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CartResponseDto result = cartService.updateCart(cartId, request, loginUser.getId());
+        CartResponseDto result = cartService.updateCart(cartId, request, userDetails.getId());
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
 
     @DeleteMapping("/{cartId}")
     public ResponseEntity<ApiResponseDto<CartResponseDto>> deleteCart(
             @PathVariable Long cartId,
-            @SessionAttribute(name= AuthConstants.LOGIN_USER, required = false) SessionUserDto loginUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-       cartService.deleteCart(cartId, loginUser.getId());
+       cartService.deleteCart(cartId, userDetails.getId());
        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }

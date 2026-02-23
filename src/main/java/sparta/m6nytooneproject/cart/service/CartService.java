@@ -21,6 +21,7 @@ import sparta.m6nytooneproject.global.exception.product.ProductNotOnSaleExceptio
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.service.ProductService;
+import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.service.UserService;
@@ -38,9 +39,9 @@ public class CartService {
     private final ProductService productService; //상품 확인용
 
     //장바구니 생성
-    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request, SessionUserDto loginUser) {
+    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request, CustomUserDetails userDetails) {
         // 1. 유저 존재 여부 확인
-        User user = userService.getUserById(loginUser.getId());
+        User user = userService.getUserById(userDetails.getId());
         //1-1. 유저 상태 체크 로직추가
         checkUserStatus(user);
         // 2. 존재하는 상품인지 확인
