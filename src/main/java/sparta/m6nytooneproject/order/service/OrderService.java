@@ -24,6 +24,7 @@ import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.service.ProductService;
+import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.entity.UserRole;
 import sparta.m6nytooneproject.user.service.UserService;
@@ -88,9 +89,12 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(Long requestUserId, Long orderId, String cancelReason) {
+    public void cancelOrder(CustomUserDetails requestUser, Long orderId, String cancelReason) {
         Order order = getOrderById(orderId);
-        userService.validateRequesterIsOwner(requestUserId, order.getCustomer().getId());
+
+        if(requestUser.getRole().equals(UserRole.CUSTOMER)) {
+            userService.validateRequesterIsOwner(requestUser.getId(), order.getCustomer().getId());
+        }
 
         if(!order.getStatus().equals(OrderStatus.PREPARED)) {
             throw new InvalidOrderStatusException(order.getStatus());
@@ -113,10 +117,10 @@ public class OrderService {
         return OrderDetailResponseDto.from(order);
     }
 
-    public Page<OrderListResponseDto> getAllOrders(int page, int size, OrderSort orderSort, String username , Long getOrderId) {
+    public Page<OrderListResponseDto> getAllOrders(int page, int size, OrderSort orderSort, String username) {
         Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by(orderSort.getProperty()).descending());
 
-        Page<Order> orders = orderRepository.search(username , getOrderId, pageable);
+        Page<Order> orders = orderRepository.search(username, pageable);
         return orders.map(OrderListResponseDto::from);
     }
 
