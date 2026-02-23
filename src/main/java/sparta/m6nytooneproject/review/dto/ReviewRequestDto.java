@@ -11,6 +11,4 @@ public class ReviewRequestDto {
     @Size(min = 1, max = 5, message = "평점은 1~5 사이의 정수로 입력해주세요.")
     private int reviewRate;
     private String content;
-    @NotBlank
-    private User customer;
 }
