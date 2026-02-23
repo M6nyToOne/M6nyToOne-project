@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sparta.m6nytooneproject.cart.service.CartService;
 import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.exception.order.CancelOrderException;
+import sparta.m6nytooneproject.global.exception.order.InvalidOrderStatusException;
 import sparta.m6nytooneproject.global.exception.order.OrderException;
 import sparta.m6nytooneproject.global.exception.order.OrderNotFoundException;
 import sparta.m6nytooneproject.order.dto.OrderDetailResponseDto;
@@ -18,6 +19,7 @@ import sparta.m6nytooneproject.order.dto.OrderListResponseDto;
 import sparta.m6nytooneproject.order.dto.OrderRequestByCsDto;
 import sparta.m6nytooneproject.order.dto.OrderRequestByCustomerDto;
 import sparta.m6nytooneproject.order.entity.Order;
+import sparta.m6nytooneproject.order.entity.OrderSort;
 import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
 import sparta.m6nytooneproject.product.entity.Product;
@@ -89,7 +91,12 @@ public class OrderService {
     public void cancelOrder(Long requestUserId, Long orderId, String cancelReason) {
         Order order = getOrderById(orderId);
         userService.validateRequesterIsOwner(requestUserId, order.getCustomer().getId());
-        order.cancelOrder(cancelReason);
+
+        if(!order.getStatus().equals(OrderStatus.PREPARED)) {
+            throw new InvalidOrderStatusException(order.getStatus());
+        }
+
+        order.setCancelOrder(cancelReason);
 
         try {
             orderRepository.saveAndFlush(order);
@@ -106,8 +113,8 @@ public class OrderService {
         return OrderDetailResponseDto.from(order);
     }
 
-    public Page<OrderListResponseDto> getAllOrders(int page, int size, String username , Long getOrderId) {
-        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
+    public Page<OrderListResponseDto> getAllOrders(int page, int size, OrderSort orderSort, String username , Long getOrderId) {
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by(orderSort.getProperty()).descending());
 
         Page<Order> orders = orderRepository.search(username , getOrderId, pageable);
         return orders.map(OrderListResponseDto::from);
@@ -123,11 +130,11 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDetailResponseDto updateOrderStatus(Long orderId , OrderStatus orderStatus, UserRole userRole) {
+    public OrderDetailResponseDto updateOrderStatus(Long orderId , UserRole userRole) {
         userService.validateIsAdmin(userRole);
 
         Order order = getOrderById(orderId);
-        order.updateOrderStatus(orderStatus);
+        order.updateOrderStatus();
         return OrderDetailResponseDto.from(order);
     }
 
