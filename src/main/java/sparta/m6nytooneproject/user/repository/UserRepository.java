@@ -3,15 +3,11 @@ package sparta.m6nytooneproject.user.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import sparta.m6nytooneproject.user.dto.UserResponseDto;
 import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.entity.UserRole;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -26,4 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByRoleNotAndSignupStatus(UserRole role, SignupStatus status, Pageable pageable);
 
     Page<User> findByRoleAndSignupStatus(UserRole role, SignupStatus signupStatus, Pageable pageable);
+
+    // 고객수
+
+    // 관리자수
 }

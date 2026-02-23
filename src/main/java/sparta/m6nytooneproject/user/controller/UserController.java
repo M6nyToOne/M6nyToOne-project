@@ -1,16 +1,15 @@
 package sparta.m6nytooneproject.user.controller;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.global.dto.LoginRequestDto;
-import sparta.m6nytooneproject.global.dto.SessionUserDto;
+import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.dto.*;
 import sparta.m6nytooneproject.user.service.UserService;
 
@@ -42,17 +41,7 @@ public class UserController {
 
     // 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponseDto<Void>> logout(
-            @SessionAttribute(name = AuthConstants.LOGIN_USER, required = false) SessionUserDto sessionUser,
-            HttpSession session
-    ) {
-        // 세션유저가 없다면 잘못된 요청 에러 반환
-        if (sessionUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
-        }
-        // 있다면 세션 무효화 후 NO_CONTENT 상태 반환
-        session.invalidate();
+    public ResponseEntity<ApiResponseDto<Void>> logout() {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 
@@ -61,9 +50,9 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getPendingUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
-    ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getPendingUsers(page, size, sessionUser)));
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ) {
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getPendingUsers(page, size, userDetails)));
     }
 
     // 슈퍼 관리자가 승인 대기중인 관리자 상태 변경 (상태 업데이트) / 각 종 상태 변경
@@ -71,9 +60,9 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateUserStatusResponseDto>> updatePendingUser(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateUserStatusRequestDto request,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request, userDetails)));
     }
 
     // 슈퍼 관리자가 등록된 전체 관리자 조회
@@ -81,9 +70,9 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getRegisteredUsers(
             @RequestParam int page,
             @RequestParam int size,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getRegisteredUsers(page, size, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getRegisteredUsers(page, size, userDetails)));
 
     }
 
@@ -91,9 +80,9 @@ public class UserController {
     @GetMapping("/registered/{userId}")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> getOneRegisteredUser(
             @PathVariable Long userId,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneRegisteredUser(userId,sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneRegisteredUser(userId,userDetails)));
     }
 
     // 슈퍼관리자가 등록된 관리자들 정보 수정 (업데이트) - 이름, 이메일, 전화번호 수정 가능
@@ -101,9 +90,9 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateUserInfo(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateUserInfoRequestDto request,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateUserInfo(userId, request, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateUserInfo(userId, request, userDetails)));
     }
 
     // 슈퍼 관리자가 다른 관리자의 역할 변경 (업데이트)
@@ -111,57 +100,57 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateRegisteredUserResponseDto>> updateRegisteredUser(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateRegisteredRequestDto request,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateRegisteredUser(userId, request, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateRegisteredUser(userId, request, userDetails)));
     }
 
     // 슈퍼 관리자가 특정 관리자 삭제(탈퇴)
     @DeleteMapping("/registered/{userId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteUser(
             @PathVariable Long userId,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        userService.deleteUser(userId, sessionUser);
+        userService.deleteUser(userId, userDetails);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 
     // 내 프로필 조회 (관리자 자신)
     @GetMapping("/me")
     public ResponseEntity<ApiResponseDto<GetUserResponseDto>> getMyInfo(
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (sessionUser == null) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
         }
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getMyInfo(sessionUser.getId())));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getMyInfo(userDetails.getId())));
     }
 
     // 내 프로필 수정 (관리자 자신)
     @PatchMapping("/me/update")
     public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateMyInfo(
             @Valid @RequestBody UpdateUserInfoRequestDto request,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (sessionUser == null) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
         }
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateMyInfo(sessionUser.getId(), request)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateMyInfo(userDetails.getId(), request)));
     }
 
     // 내 비밀번호 변경 (관리자 자신)
     @PatchMapping("/me/password")
     public ResponseEntity<ApiResponseDto<UpdateMyPasswordResponseDto>> updateMyPassword(
             @Valid @RequestBody UpdateMyPasswordRequestDto request,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (sessionUser == null) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
         }
-        userService.changeMyPassword(sessionUser.getId(), request);
+        userService.changeMyPassword(userDetails.getId(), request);
         return ResponseEntity.ok(ApiResponseDto.successWithNoContent());
     }
 
@@ -172,18 +161,18 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<Page<GetAllCustomerResponseDto>>> getAllCustomer(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getAllCustomer(page, size, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getAllCustomer(page, size, userDetails)));
     }
 
     // 고객 정보 상세 조회
     @GetMapping("/customers/{userId}")
     public ResponseEntity<ApiResponseDto<GetOneCustomerResponseDto>> getOneCustomer(
             @PathVariable Long userId,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneCustomer(userId, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneCustomer(userId, userDetails)));
     }
 
     // 고객 정보 수정
@@ -191,9 +180,9 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerInfo(
         @PathVariable Long userId,
         @RequestBody UpdateUserInfoRequestDto request,
-        @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomer(userId, request, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomer(userId, request, userDetails)));
     }
 
     // 고객 상태 변경
@@ -201,18 +190,18 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerStatus(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateCustomerStatusRequestDto request,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomerStatus(userId, request, sessionUser)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomerStatus(userId, request, userDetails)));
     }
 
     // 고객 삭제
     @DeleteMapping("/customers/{userId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteCustomer(
             @PathVariable Long userId,
-            @SessionAttribute(name = AuthConstants.LOGIN_USER) SessionUserDto sessionUser
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        userService.deleteCustomer(userId, sessionUser);
+        userService.deleteCustomer(userId, userDetails);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }
