@@ -52,7 +52,7 @@ public class Product extends BaseEntity {
         this.admin = admin;
     }
 
-    public void updateProduct(String productName, Category category, int price) {
+    public void updateProduct(String productName, Category category, Integer price) {
         this.productName = productName;
         this.category = category;
         this.price = price;
@@ -74,10 +74,5 @@ public class Product extends BaseEntity {
 
     public void onSaleProduct() {
         this.status = Status.ON_SALE;
-    }
-
-
-    public void updateProductStatus(Status status) {
-        this.status = status;
     }
 }

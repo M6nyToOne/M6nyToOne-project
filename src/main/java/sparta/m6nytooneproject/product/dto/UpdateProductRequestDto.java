@@ -9,7 +9,6 @@ import sparta.m6nytooneproject.product.entity.Category;
 
 @Getter
 public class UpdateProductRequestDto {
-    // update 인데 필수???
     @Min(value = 0, message = "가격은 0원 이상어야 합니다.")
     private int price;
 
