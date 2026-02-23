@@ -1,6 +1,7 @@
 package sparta.m6nytooneproject.product.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -35,9 +37,11 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto createProduct(CustomUserDetails userDetails, ProductRequestDto request) {
+        log.info("userDetails.getId() " + userDetails.getId());
         User isAdmin = userService.getUserById(userDetails.getId());
 
         userService.isAdmin(userDetails);
+        log.info("admin" + isAdmin.getId());
         Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), isAdmin);
 
         Product savedProduct = productRepository.save(product);
@@ -129,7 +133,7 @@ public class ProductService {
         userService.isAdmin(userDetails);
 
         Product product = getProductById(productId);
-        setProductStatus(product);
+        product.setStatus(request.getStatus());
         return new ProductResponseDto(product);
     }
 

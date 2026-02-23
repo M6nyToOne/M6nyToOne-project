@@ -1,6 +1,7 @@
 package sparta.m6nytooneproject.security;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +13,7 @@ import sparta.m6nytooneproject.user.entity.UserRole;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @NullMarked
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {

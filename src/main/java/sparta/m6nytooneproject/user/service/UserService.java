@@ -1,6 +1,7 @@
 package sparta.m6nytooneproject.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true) // 디폴트가 읽기모드
@@ -137,6 +139,7 @@ public class UserService {
     @Transactional
     public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto request, CustomUserDetails userDetails) {
         isSuperAdmin(userDetails);
+        log.info("userDetails {}" , userDetails.getRole());
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         user.updateUserInfo(

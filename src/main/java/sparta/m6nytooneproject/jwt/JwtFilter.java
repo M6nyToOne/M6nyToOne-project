@@ -43,11 +43,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // 3. 토큰에서 정보 꺼내기
         String email = jwtUtil.getEmail(token);
+        Long id = jwtUtil.getId(token);
         log.info(jwtUtil.getRole(token));
         UserRole role = UserRole.valueOf(jwtUtil.getRole(token));
 
         CustomUserDetails userDetails = new CustomUserDetails(
-                User.ofToken(email, role)
+                User.ofToken(id, email, role)
         );
 
         Authentication auth = new UsernamePasswordAuthenticationToken(

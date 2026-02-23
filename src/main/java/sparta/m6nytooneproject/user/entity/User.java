@@ -99,8 +99,9 @@ public class User extends BaseEntity {
         rejectReason = reason;
     }
 
-    public static User ofToken(String email, UserRole role) {
+    public static User ofToken(Long id, String email, UserRole role) {
         User user = new User();
+        user.id = id;
         user.email = email;
         user.role = role;
         return user;

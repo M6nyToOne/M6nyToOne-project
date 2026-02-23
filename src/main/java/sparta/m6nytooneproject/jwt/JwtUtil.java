@@ -24,9 +24,10 @@ public class JwtUtil {
     }
 
     // UserRole 타입으로 받기
-    public String createToken(String email, UserRole role) {
+    public String createToken(Long id,String email, UserRole role) {
         return Jwts.builder()
                 .subject(email)
+                .claim("userId", id)
                 .claim("role", role.name()) // "ADMIN", "USER" 같은 깔끔한 문자열
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
@@ -48,6 +49,10 @@ public class JwtUtil {
 
     public String getRole(String token) {
         return parseClaims(token).get("role", String.class);
+    }
+
+    public Long getId(String token) {
+        return parseClaims(token).get("userId", Long.class);
     }
 
     public boolean isExpired(String token) {
