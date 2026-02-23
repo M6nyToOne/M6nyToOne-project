@@ -35,11 +35,8 @@ public class UserController {
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDto<Void>> login(
-            @Valid @RequestBody LoginRequestDto request,
-            HttpSession session
+            @Valid @RequestBody LoginRequestDto request
     ) {
-        SessionUserDto sessionUser = userService.login(request);
-        session.setAttribute(AuthConstants.LOGIN_USER, sessionUser);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 

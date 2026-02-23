@@ -98,4 +98,11 @@ public class User extends BaseEntity {
         rejectedAt = LocalDateTime.now();
         rejectReason = reason;
     }
+
+    public static User ofToken(String email, UserRole role) {
+        User user = new User();
+        user.email = email;
+        user.role = role;
+        return user;
+    }
 }
