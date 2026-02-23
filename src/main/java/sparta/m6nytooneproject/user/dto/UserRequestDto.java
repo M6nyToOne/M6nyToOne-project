@@ -7,7 +7,7 @@ import sparta.m6nytooneproject.user.entity.UserRole;
 @Getter
 public class UserRequestDto {
 
-    @NotBlank(message = "이름을 입력해주세요")
+    @NotBlank(message = "이름을 입력해주세요.")
     private String name;
 
     @NotBlank(message = "이메일을 입력해주세요.")
