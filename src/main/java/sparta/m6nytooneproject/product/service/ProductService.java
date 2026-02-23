@@ -105,8 +105,6 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProduct(SessionUserDto sessionUser, Long productId, UpdateProductRequestDto request) {
-        User isAdmin = userService.getUserById(sessionUser.getId());
-
         userService.isAdmin(sessionUser);
         Product product = getProductById(productId);
         product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
@@ -115,8 +113,6 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProductStock(SessionUserDto sessionUser, Long productId, int stock) {
-        User isAdmin = userService.getUserById(sessionUser.getId());
-
         userService.isAdmin(sessionUser);
 
         Product product = getProductById(productId);
@@ -128,8 +124,6 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProductStatus(SessionUserDto sessionUser, Long productId, UpdateProductStatusRequestDto request) {
-        User isAdmin = userService.getUserById(sessionUser.getId());
-
         userService.isAdmin(sessionUser);
 
         Product product = getProductById(productId);
@@ -168,8 +162,6 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(SessionUserDto sessionUser,Long productId) {
-        User isAdmin = userService.getUserById(sessionUser.getId());
-
         userService.isAdmin(sessionUser);
         Product product = getProductById(productId);
 
