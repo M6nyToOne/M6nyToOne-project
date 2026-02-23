@@ -18,7 +18,8 @@ import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.service.ProductService;
 import sparta.m6nytooneproject.security.CustomUserDetails;
 
-@RestController("/products")
+@RestController
+@RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
 
