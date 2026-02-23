@@ -8,7 +8,7 @@ import sparta.m6nytooneproject.user.entity.UserRole;
 import java.time.LocalDateTime;
 
 @Getter
-public class UserResponseDto {
+public class GetOneCustomerResponseDto {
 
     private final Long id;
     private final String userName;
@@ -17,9 +17,8 @@ public class UserResponseDto {
     private final UserRole userRole;
     private final SignupStatus signupStatus;
     private final LocalDateTime createdAt;
-    private final LocalDateTime approvedAt;
 
-    public UserResponseDto(User user) {
+    public GetOneCustomerResponseDto(User user) {
         this.id = user.getId();
         this.userName = user.getUserName();
         this.email = user.getEmail();
@@ -27,6 +26,5 @@ public class UserResponseDto {
         this.userRole = user.getRole();
         this.signupStatus = user.getSignupStatus();
         this.createdAt = user.getCreatedAt();
-        this.approvedAt = user.getApprovedAt();
     }
 }

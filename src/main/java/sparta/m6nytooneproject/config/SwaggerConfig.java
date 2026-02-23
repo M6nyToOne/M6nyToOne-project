@@ -16,5 +16,4 @@ public class SwaggerConfig {
                         .description("M6nyToOne API 문서")
                         .version("v1.0.0"));
     }
-
 }

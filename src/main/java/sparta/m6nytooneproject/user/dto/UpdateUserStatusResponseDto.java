@@ -15,7 +15,7 @@ public class UpdateUserStatusResponseDto {
     private final String phoneNumber;
     private final SignupStatus signupStatus;
     private final LocalDateTime createdAt;
-    private final LocalDateTime modifiedAt;
+    private final LocalDateTime approvedAt;
 
     public UpdateUserStatusResponseDto(User user) {
         this.id = user.getId();
@@ -24,6 +24,6 @@ public class UpdateUserStatusResponseDto {
         this.phoneNumber = user.getPhoneNumber();
         this.signupStatus = user.getSignupStatus();
         this.createdAt = user.getCreatedAt();
-        this.modifiedAt = user.getModifiedAt();
+        this.approvedAt = user.getApprovedAt();
     }
 }
