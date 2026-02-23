@@ -6,9 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sparta.m6nytooneproject.global.exception.order.CancelOrderException;
+import sparta.m6nytooneproject.global.exception.order.OrderException;
 import sparta.m6nytooneproject.global.exception.order.OrderNotFoundException;
-import sparta.m6nytooneproject.global.exception.product.ProductNotFoundException;
-import sparta.m6nytooneproject.global.exception.user.UserNotFoundException;
 import sparta.m6nytooneproject.order.dto.OrderDetailResponseDto;
 import sparta.m6nytooneproject.order.dto.OrderListResponseDto;
 import sparta.m6nytooneproject.order.dto.OrderRequestDto;
@@ -16,9 +16,9 @@ import sparta.m6nytooneproject.order.entity.Order;
 import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
 import sparta.m6nytooneproject.product.entity.Product;
-import sparta.m6nytooneproject.product.repository.ProductRepository;
+import sparta.m6nytooneproject.product.service.ProductService;
 import sparta.m6nytooneproject.user.entity.User;
-import sparta.m6nytooneproject.user.repository.UserRepository;
+import sparta.m6nytooneproject.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
@@ -26,57 +26,49 @@ import sparta.m6nytooneproject.user.repository.UserRepository;
 @Transactional(readOnly = true)
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
-    private final ProductRepository productRepository;
+    private final UserService userService;
+    private final ProductService productService;
 
-    public Product checkProductStock(Long productId , int quantity) {
-        // 했다치고
-        return productRepository.findById(productId).orElseThrow(
-                () ->  new ProductNotFoundException("존재하지 않는 상품입니다.")
-        );
-    }
-    public User checkValidateUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () ->  new UserNotFoundException("존재하지 않는 유저입니다.")
-        );
-        // 했다치고
-    }
-
-    public void manageProductStock(Long productId , int quantity) {}
 
     @Transactional
-    public OrderDetailResponseDto createOrder(OrderRequestDto request) {
-        User admin = null;
-        User customer = checkValidateUser(request.getUserId());
-        Product product = checkProductStock(request.getProductId(),request.getQuantity());
-        if (request.getAdminId() != null) {
-            admin = checkValidateUser(request.getAdminId());
-        }
+    public OrderDetailResponseDto createOrderByCustomer(OrderRequestDto request, Long customerId) {
+        User customer = userService.getUserById(customerId);
+
+        // 고객이 주문하는게 맞는지 검증.
+        userService.checkValidCustomer(customer.getRole());
+
+        Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
+
+        // admin 없는 주문 생성.
         Order order = new Order(
-                product.getPrice(),
+                validProduct.getPrice(),
                 request.getQuantity(),
                 OrderStatus.PREPARED,
-                product.getProductName(),
+                validProduct.getProductName(),
                 customer.getUserName(),
-                product,
-                customer,
-                admin
+                validProduct,
+                customer
         );
         orderRepository.save(order);
-        //TODO : product 수량 조절 서비스 호출
-        manageProductStock(request.getProductId(),request.getQuantity());
-
+        //product 수량 조절 서비스 호출
+        productService.decreaseStock(validProduct, request.getQuantity());
         return OrderDetailResponseDto.from(order);
     }
 
     @Transactional
-    public void cancelOrder(Long orderId , String cancelReason) {
+    public void cancelOrder(Long requestUserId, Long orderId, String cancelReason) {
         Order order = getOrderById(orderId);
+        userService.validateRequesterIsOwner(requestUserId, order.getCustomer().getId());
         order.cancelOrder(cancelReason);
-        orderRepository.saveAndFlush(order);
-        orderRepository.delete(order);
-        //TODO : product 수량 조절 서비스 호출
-        manageProductStock(order.getProduct().getId(),order.getQuantity());
+
+        try {
+            orderRepository.saveAndFlush(order);
+            orderRepository.delete(order);
+            productService.increaseStock(order.getProduct() , order.getQuantity());
+        }catch (OrderException e) {
+            log.error("주문취소 중 에러가 발생하였습니다. : {}" ,e.getMessage());
+            throw new CancelOrderException("주문취소 중 에러가 발생하였습니다.");
+        }
     }
 
     public OrderDetailResponseDto getOneOrder(Long orderId) {
@@ -85,7 +77,6 @@ public class OrderService {
     }
 
     public Page<OrderListResponseDto> getAllOrders(Pageable pageable , String username , Long getOrderId) {
-        // TODO : 세션 검증
         Page<Order> orders = orderRepository.search(username , getOrderId, pageable);
         return orders.map(OrderListResponseDto::from);
     }

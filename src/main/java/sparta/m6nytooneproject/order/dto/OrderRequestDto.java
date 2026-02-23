@@ -9,8 +9,6 @@ public class OrderRequestDto {
     private Integer quantity;
     @Min(1)
     private Long productId;
-    @Min(1)
-    private Long userId;
 
     private Long adminId;
 }
