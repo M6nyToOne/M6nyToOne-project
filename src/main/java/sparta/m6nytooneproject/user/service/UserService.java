@@ -193,7 +193,6 @@ public class UserService {
     }
 
     // 내 비밀번호 변경 (관리자 자신)
-    // TODO: 기존비밀번호와 동일했을때의 에러 수정 필요
     @Transactional
     public void changeMyPassword(Long userId, UpdateMyPasswordRequestDto request) {
         User user = getUserById(userId);
@@ -202,7 +201,7 @@ public class UserService {
             throw new UnmatchPasswordException("현재 비밀번호가 일치하지 않습니다.");
         }
         if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-            throw new IllegalStateException("기존 비밀번호와 다르게 설정해주세요.");
+            throw new UnmatchPasswordException("기존 비밀번호와 다르게 설정해주세요.");
         }
         user.changePassword(passwordEncoder.encode(request.getNewPassword()));
     }
