@@ -1,10 +1,12 @@
 package sparta.m6nytooneproject.user.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import sparta.m6nytooneproject.user.entity.UserRole;
 
 @Getter
+@AllArgsConstructor
 public class UserRequestDto {
 
     @NotBlank(message = "이름을 입력해주세요.")

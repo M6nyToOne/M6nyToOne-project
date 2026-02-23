@@ -55,7 +55,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String token = jwtUtil.createToken(userDetails.getUsername(), userDetails.getRole());
+        String token = jwtUtil.createToken(userDetails.getId(), userDetails.getUsername(), userDetails.getRole());
 
         // 헤더에 토큰 추가
         response.addHeader("Authorization", "Bearer " + token);
