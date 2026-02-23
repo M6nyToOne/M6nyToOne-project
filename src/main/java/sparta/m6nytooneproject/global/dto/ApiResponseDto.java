@@ -3,6 +3,8 @@ package sparta.m6nytooneproject.global.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Map;
+
 @Getter
 @AllArgsConstructor
 public class ApiResponseDto<T> {
@@ -20,5 +22,9 @@ public class ApiResponseDto<T> {
 
     public static <T> ApiResponseDto<T> error(String message) {
         return new ApiResponseDto<>("Error!", message, null);
+    }
+
+    public static <T> ApiResponseDto<T> errorWithMap(T map, String message) {
+        return new ApiResponseDto<>("Error!", message, map);
     }
 }
