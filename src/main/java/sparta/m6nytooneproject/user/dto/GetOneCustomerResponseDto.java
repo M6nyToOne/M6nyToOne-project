@@ -18,7 +18,11 @@ public class GetOneCustomerResponseDto {
     private final SignupStatus signupStatus;
     private final LocalDateTime createdAt;
 
-    public GetOneCustomerResponseDto(User user) {
+    // Lv.1 고객 조회 데이터 확장
+    private final Long orderCount;
+    private final Long totalAmount;
+
+    public GetOneCustomerResponseDto(User user, Long orderCount, Long totalAmount) {
         this.id = user.getId();
         this.userName = user.getUserName();
         this.email = user.getEmail();
@@ -26,5 +30,7 @@ public class GetOneCustomerResponseDto {
         this.userRole = user.getRole();
         this.signupStatus = user.getSignupStatus();
         this.createdAt = user.getCreatedAt();
+        this.orderCount = orderCount;
+        this.totalAmount = totalAmount;
     }
 }
