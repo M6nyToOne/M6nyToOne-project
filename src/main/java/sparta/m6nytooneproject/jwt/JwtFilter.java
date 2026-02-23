@@ -15,7 +15,6 @@ import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.entity.UserRole;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,10 +43,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // 3. 토큰에서 정보 꺼내기
         String email = jwtUtil.getEmail(token);
-        UserRole role = Arrays.stream(UserRole.values())
-                .filter(r -> r.getKey().equals(jwtUtil.getRole(token)))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 권한입니다."));
+        log.info(jwtUtil.getRole(token));
+        UserRole role = UserRole.valueOf(jwtUtil.getRole(token));
 
         CustomUserDetails userDetails = new CustomUserDetails(
                 User.ofToken(email, role)
