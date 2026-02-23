@@ -9,12 +9,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sparta.m6nytooneproject.global.AuthConstants;
-import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.global.exception.user.UserRoleNotMatchException;
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
 import sparta.m6nytooneproject.global.exception.user.*;
 import sparta.m6nytooneproject.order.dto.CustomerOrderSummaryDto;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
+import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.dto.*;
 import sparta.m6nytooneproject.user.entity.SignupStatus;
 import sparta.m6nytooneproject.user.entity.User;
@@ -38,19 +38,19 @@ public class UserService {
     // ===== 3. 관리자 정보 관리 =====
 
     // 슈퍼 관리자 맞는지 검증
-    public void isSuperAdmin(SessionUserDto sessionUser) {
-        isAdmin(sessionUser);
-        if (!sessionUser.getUserRole().equals(UserRole.SUPER_ADMIN)) {
+    public void isSuperAdmin(CustomUserDetails userDetails) {
+        isAdmin(userDetails);
+        if (!userDetails.getRole().equals(UserRole.SUPER_ADMIN)) {
             throw new UnAuthorizedException("슈퍼 관리자 권한이 필요합니다.");
         }
     }
 
     // 그냥 관리자들이 맞는 지 검증
-    public void isAdmin(SessionUserDto sessionUser) {
-        if (sessionUser == null) {
-            throw new UnAuthorizedException("세션이 존재하지 않습니다.");
+    public void isAdmin(CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new UnAuthorizedException("토큰이 유효하지 않습니다.");
         }
-        if (sessionUser.getUserRole().equals(UserRole.CUSTOMER)) {
+        if (userDetails.getRole().equals(UserRole.CUSTOMER)) {
             throw new UnAuthorizedException("관리자 권한이 필요합니다.");
         }
     }
@@ -84,32 +84,10 @@ public class UserService {
         return new UserResponseDto(savedUser);
         // 슈퍼 관리자가 승인해야 됨.
     }
-    // 로그인
-//    public SessionUserDto login(LoginRequestDto request) {
-//        // 이메일이 유효한지
-//        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
-//                () -> new UserNotFoundException("존재하지 않는 이메일입니다.")
-//        );
-//        // 비밀번호가 일치하는지
-//        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-//            throw new UnmatchPasswordException("비밀번호가 일치하지 않습니다.");
-//        }
-//        // 회원가입 상태가 활성되지 않았다면 예외
-//        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
-//            switch (user.getSignupStatus()) {
-//                case PENDING -> throw new SessionNotActiveException("회원가입 승인 대기중입니다.");
-//                case REJECTED -> throw new SessionNotActiveException("회원가입 신청이 거부되었습니다.");
-//                case SUSPEND -> throw new SessionNotActiveException("계정이 정지되었습니다.");
-//                case INACTIVE -> throw new SessionNotActiveException("계정이 비활성화 상태입니다.");
-//            }
-//        }
-//        // 활성상태라면 로그인
-//        return new SessionUserDto(user);
-//    }
 
     // 슈퍼 관리자가 승인대기중인 관리자 전체조회
-    public Page<UserResponseDto> getPendingUsers(int page, int size, SessionUserDto sessionUser) {
-        isSuperAdmin(sessionUser);
+    public Page<UserResponseDto> getPendingUsers(int page, int size, CustomUserDetails userDetails) {
+        isSuperAdmin(userDetails);
         Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
         return userRepository.findByRoleInAndSignupStatus(
                 List.of(UserRole.SUPER_ADMIN, UserRole.OPER_ADMIN, UserRole.MARKET_ADMIN, UserRole.CS_ADMIN),
@@ -120,8 +98,8 @@ public class UserService {
 
     // 슈퍼 관리자가 승인대기중인 관리자 승인(업데이트) / 각종 상태 변경
     @Transactional
-    public UpdateUserStatusResponseDto updatePendingUser(Long userId, UpdateUserStatusRequestDto request, SessionUserDto sessionUser) {
-        isSuperAdmin(sessionUser);
+    public UpdateUserStatusResponseDto updatePendingUser(Long userId, UpdateUserStatusRequestDto request, CustomUserDetails userDetails) {
+        isSuperAdmin(userDetails);
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         // 슈퍼 관리자가 승인대기 상태를 활성/거부 상태로 업데이트
@@ -137,16 +115,16 @@ public class UserService {
     }
 
     // 등록된 관리자 전체 조회
-    public Page<UserResponseDto> getRegisteredUsers(int page, int size, SessionUserDto sessionUser) {
-        isSuperAdmin(sessionUser);
+    public Page<UserResponseDto> getRegisteredUsers(int page, int size, CustomUserDetails userDetails) {
+        isSuperAdmin(userDetails);
         Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
         Page<User> users = userRepository.findByRoleNotAndSignupStatus(UserRole.CUSTOMER, SignupStatus.ACTIVE, pageable);
         return users.map(UserResponseDto::new);
     }
 
     // 등록된 관리자 상세 조회 (단 건 조회)
-    public UserResponseDto getOneRegisteredUser(Long userId, SessionUserDto sessionUser) {
-        isSuperAdmin(sessionUser);
+    public UserResponseDto getOneRegisteredUser(Long userId, CustomUserDetails userDetails) {
+        isSuperAdmin(userDetails);
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
@@ -157,8 +135,8 @@ public class UserService {
 
     // 등록된 관리자 정보 수정
     @Transactional
-    public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto request, SessionUserDto sessionUser) {
-        isSuperAdmin(sessionUser);
+    public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto request, CustomUserDetails userDetails) {
+        isSuperAdmin(userDetails);
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         user.updateUserInfo(
@@ -171,8 +149,8 @@ public class UserService {
 
     // 등록된 관리자 역할 변경
     @Transactional
-    public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto request, SessionUserDto sessionUser) {
-        isSuperAdmin(sessionUser);
+    public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto request, CustomUserDetails userDetails) {
+        isSuperAdmin(userDetails);
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         if (request.getUserRole().equals(user.getRole())) {
@@ -184,8 +162,8 @@ public class UserService {
 
     // 등록된 관리자 삭제
     @Transactional
-    public void deleteUser(Long userId, SessionUserDto sessionUser) {
-        isSuperAdmin(sessionUser);
+    public void deleteUser(Long userId, CustomUserDetails userDetails) {
+        isSuperAdmin(userDetails);
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         userRepository.delete(user);
@@ -231,12 +209,11 @@ public class UserService {
 
     // ===== 4. 고객 정보 관리 =====
     // 고객 전체조회 (페이징) + 총 주문수, 총 구매 금액
-    public Page<GetAllCustomerResponseDto> getAllCustomer(int page, int size, SessionUserDto sessionUser) {
-        isAdmin(sessionUser);
+    public Page<GetAllCustomerResponseDto> getAllCustomer(int page, int size, CustomUserDetails userDetails) {
+        isAdmin(userDetails);
         Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
         Page<User> users = userRepository.findByRoleAndSignupStatus(UserRole.CUSTOMER, SignupStatus.ACTIVE, pageable);
 
-        // TODO: Lv1. 고객 id 뽑아서 각 고객의 총 주문수, 총 구매 금액 구해서 응답에 추가하기
         List<Long> customerIds = users.stream().map(User::getId).toList(); // user에서 각 고객 id 뽑기
         List<CustomerOrderSummaryDto> summaries = orderRepository.summaryCustomerOrder(customerIds); // 주문 집계
 
@@ -258,11 +235,10 @@ public class UserService {
     }
 
     // 고객 상세 조회 + 총 주문 수, 총 구매 금액
-    public GetOneCustomerResponseDto getOneCustomer(Long userId, SessionUserDto sessionUser) {
-        isAdmin(sessionUser);
+    public GetOneCustomerResponseDto getOneCustomer(Long userId, CustomUserDetails userDetails) {
+        isAdmin(userDetails);
         User user = getUserById(userId);
         validCustomer(user.getRole());
-        // TODO: Lv1. 해당 고객의 총 주문수, 총 구매 금액 구해서 응답에 추가하기
         // 해당 고객id의 주문 정보가 존재하면 가져와서 dto에 넣고, 주문이 없다면 디폴트값 주문수 0, 금액 0원으로 표기해라.
         CustomerOrderSummaryDto dto = orderRepository.summaryOneCustomerOrder(user.getId())
                 .orElse(new CustomerOrderSummaryDto(user.getId(), 0L, 0L));
@@ -271,8 +247,8 @@ public class UserService {
 
     // 고객 정보 수정
     @Transactional
-    public UpdateCustomerInfoResponseDto updateCustomer(Long userId, UpdateUserInfoRequestDto request, SessionUserDto sessionUser) {
-        isAdmin(sessionUser);
+    public UpdateCustomerInfoResponseDto updateCustomer(Long userId, UpdateUserInfoRequestDto request, CustomUserDetails userDetails) {
+        isAdmin(userDetails);
         User user = getUserById(userId);
         validCustomer(user.getRole());
         user.updateUserInfo(request.getUserName(), request.getEmail(), request.getPhoneNumber());
@@ -281,8 +257,8 @@ public class UserService {
 
     // 고객 상태 변경
     @Transactional
-    public UpdateCustomerInfoResponseDto updateCustomerStatus(Long userId, UpdateCustomerStatusRequestDto request, SessionUserDto sessionUser) {
-        isAdmin(sessionUser);
+    public UpdateCustomerInfoResponseDto updateCustomerStatus(Long userId, UpdateCustomerStatusRequestDto request, CustomUserDetails userDetails) {
+        isAdmin(userDetails);
         SignupStatus target = request.getSignupStatus();
         User user = getUserById(userId);
         validCustomer(user.getRole());
@@ -298,8 +274,8 @@ public class UserService {
 
     // 고객 삭제
     @Transactional
-    public void deleteCustomer(Long userId, SessionUserDto sessionUser) {
-        isAdmin(sessionUser);
+    public void deleteCustomer(Long userId, CustomUserDetails userDetails) {
+        isAdmin(userDetails);
         User user = getUserById(userId);
         validCustomer(user.getRole());
         userRepository.delete(user);
