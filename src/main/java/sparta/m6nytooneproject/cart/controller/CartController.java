@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,7 @@ public class CartController {
 
     //장바구니 생성
     @PostMapping
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponseDto<CartResponseDto>> createCart(
             @Valid @RequestBody CartRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -58,7 +60,9 @@ public class CartController {
 
     //카트id로 수정
     @PatchMapping("/{cartId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #userId)")
     public ResponseEntity<ApiResponseDto<CartResponseDto>> updateCart(
+            @PathVariable Long userId,
             @PathVariable Long cartId,
             @Valid @RequestBody CartRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -68,7 +72,9 @@ public class CartController {
     }
 
     @DeleteMapping("/{cartId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #userId)")
     public ResponseEntity<ApiResponseDto<CartResponseDto>> deleteCart(
+            @PathVariable Long userId,
             @PathVariable Long cartId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
