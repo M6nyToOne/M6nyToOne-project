@@ -57,7 +57,7 @@ public class CartController {
 
     //카트id로 수정
     @PatchMapping("/{cartId}")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #userId)")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #cartId)")
     public ApiResponseDto<CartResponseDto> updateCart(
             @PathVariable Long cartId,
             @Valid @RequestBody CartRequestDto request,
@@ -68,9 +68,8 @@ public class CartController {
     }
 
     @DeleteMapping("/{cartId}")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #userId)")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #cartId)")
     public ApiResponseDto<CartResponseDto> deleteCart(
-            @PathVariable Long userId,
             @PathVariable Long cartId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
