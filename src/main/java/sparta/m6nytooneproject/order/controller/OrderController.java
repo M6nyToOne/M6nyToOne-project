@@ -35,7 +35,7 @@ public class OrderController {
     }
 
     @PostMapping("/{customerId}/cs")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS')")
     public ApiResponseDto<OrderDetailResponseDto> createOrderByCs(
             @RequestBody @Valid OrderRequestByCsDto request,
             @PathVariable Long customerId,
@@ -48,7 +48,7 @@ public class OrderController {
     }
 
     @GetMapping("/lists")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS')")
     public ApiResponseDto<OrderListResponseDto> getAllOrders(
             @RequestParam(required = false) String username,
             @RequestParam(required = false , defaultValue = "1") int page,
@@ -76,7 +76,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @orderSecurity.isOwner(authentication , #orderId)")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @orderSecurity.isOwner(authentication , #orderId)")
     public ApiResponseDto<OrderDetailResponseDto> getOneOrder(
             @PathVariable Long orderId
     ) {
@@ -86,7 +86,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/complete")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS')")
     public ApiResponseDto<OrderDetailResponseDto> completeOrder(
             @PathVariable Long orderId
     ) {
@@ -96,7 +96,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/status")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS')")
     public ApiResponseDto<OrderDetailResponseDto> updateOrderStatus(
             @PathVariable Long orderId
     ) {
@@ -104,7 +104,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}/cancel")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @orderSecurity.isOwner(authentication , #orderId)")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @orderSecurity.isOwner(authentication , #orderId)")
     public ApiResponseDto<Void> cancelOrder(
             @PathVariable Long orderId,
             @RequestParam String cancelReason
