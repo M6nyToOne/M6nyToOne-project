@@ -189,7 +189,7 @@ public class UserController {
      * @return 회원 상세 정보
      */
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @userSecurity.isOwner(authentication, #userDetails.id)")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') and @userSecurity.isOwner(authentication, #userDetails.id)")
     public ApiResponseDto<GetUserResponseDto> getMyInfo(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -223,7 +223,7 @@ public class UserController {
      * @return 회원 상세 정보
      */
     @PatchMapping("/me/password")
-    @PreAuthorize("@userSecurity.isOwner(authentication, #userDetails.id)")
+    @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userDetails.id)")
     public ApiResponseDto<Void> updateMyPassword(
             @Valid @RequestBody UpdateMyPasswordRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
