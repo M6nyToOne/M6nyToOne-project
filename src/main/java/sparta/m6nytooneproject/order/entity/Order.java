@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
+import sparta.m6nytooneproject.global.exception.order.OrderStatueNotChangedException;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.user.entity.User;
 
@@ -74,6 +75,8 @@ public class Order extends BaseEntity {
             case DELIVERED:
                 this.status = OrderStatus.COMPLETED;
                 break;
+            default:
+                throw new OrderStatueNotChangedException("주문 상태를 변경 할 수 없습니다");
         }
     }
 

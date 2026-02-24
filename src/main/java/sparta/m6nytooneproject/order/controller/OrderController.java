@@ -98,20 +98,18 @@ public class OrderController {
     @PatchMapping("/{orderId}/status")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ApiResponseDto<OrderDetailResponseDto> updateOrderStatus(
-            @PathVariable Long orderId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable Long orderId
     ) {
-        return ApiResponseDto.success(HttpStatus.OK,orderService.updateOrderStatus(orderId,userDetails.getRole()));
+        return ApiResponseDto.success(HttpStatus.OK,orderService.updateOrderStatus(orderId));
     }
 
     @DeleteMapping("/{orderId}/cancel")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @orderSecurity.isOwner(authentication , #orderId)")
     public ApiResponseDto<Void> cancelOrder(
             @PathVariable Long orderId,
-            @RequestParam String cancelReason,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestParam String cancelReason
     ) {
-        orderService.cancelOrder(userDetails, orderId, cancelReason);
+        orderService.cancelOrder(orderId, cancelReason);
         return ApiResponseDto.successWithNoContent();
     }
 }

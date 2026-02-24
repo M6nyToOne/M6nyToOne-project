@@ -86,12 +86,8 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(CustomUserDetails requestUser, Long orderId, String cancelReason) {
+    public void cancelOrder(Long orderId, String cancelReason) {
         Order order = getOrderById(orderId);
-
-        if(requestUser.getRole().equals(UserRole.CUSTOMER)) {
-            userService.validateRequesterIsOwner(requestUser.getId(), order.getCustomer().getId());
-        }
 
         if(!order.getStatus().equals(OrderStatus.PREPARED)) {
             throw new InvalidOrderStatusException(order.getStatus());
@@ -136,9 +132,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDetailResponseDto updateOrderStatus(Long orderId , UserRole userRole) {
-        userService.validateIsAdmin(userRole);
-
+    public OrderDetailResponseDto updateOrderStatus(Long orderId) {
         Order order = getOrderById(orderId);
         order.updateOrderStatus();
         return OrderDetailResponseDto.from(order);
