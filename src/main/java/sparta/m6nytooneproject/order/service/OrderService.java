@@ -42,9 +42,6 @@ public class OrderService {
     @Transactional
     public OrderDetailResponseDto createOrderByCustomer(OrderRequestByCustomerDto request, Long customerId, Long cartId) {
         User customer = userService.getUserById(customerId);
-
-        userService.validCustomer(customer.getRole());
-
         Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
 
         Order order = new Order(
@@ -66,11 +63,7 @@ public class OrderService {
     @Transactional
     public OrderDetailResponseDto createOrderByAdmin(OrderRequestByCsDto request, Long customerId , Long adminId) {
         User customer = userService.getUserById(customerId);
-        userService.validCustomer(customer.getRole());
-
         User admin = userService.getUserById(adminId);
-        userService.validateIsAdmin(admin.getRole());
-
         Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
 
         Order order = new Order(
@@ -125,9 +118,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDetailResponseDto completeOrder(Long orderId, UserRole userRole) {
-        userService.validateIsAdmin(userRole);
-
+    public OrderDetailResponseDto completeOrder(Long orderId) {
         Order order = getOrderById(orderId);
         order.completeOrder();
         return OrderDetailResponseDto.from(order);

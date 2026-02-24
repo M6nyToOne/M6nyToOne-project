@@ -15,6 +15,12 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponseDto.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<ApiResponseDto<Void>> handleServiceException(ServiceException ex) {
         return ResponseEntity.status(ex.getStatus()).body(ApiResponseDto.error(ex.getMessage()));
