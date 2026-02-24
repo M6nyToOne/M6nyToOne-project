@@ -42,9 +42,6 @@ public class ReviewService {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new OrderNotFoundException("존재하지 않는 주문입니다.")
         );
-        if (!order.getCustomer().getId().equals(customUserDetails.getId())) {
-            throw new UnAuthorizedException("주문자 본인만 리뷰를 작성할 수 있습니다.");
-        }
         if (reviewRepository.existsByOrderId(orderId)) {
             throw new AlreadyExistingReviewException("이미 리뷰를 작성한 주문입니다.");
         }
@@ -67,7 +64,7 @@ public class ReviewService {
         return new GetReviewDetailResponseDto(review);
     }
 
-    public void deleteReview(Long reviewId, CustomUserDetails customUserDetails) {
+    public void deleteReview(Long reviewId) {
         if (reviewRepository.existsById(reviewId)) {
             throw new ReviewNotFoundException("존재하지 않는 리뷰입니다.");
         }

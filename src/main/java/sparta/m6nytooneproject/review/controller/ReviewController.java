@@ -55,10 +55,9 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ResponseEntity<ApiResponseDto<Void>> deleteReview(
-            @PathVariable Long reviewId,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails
+            @PathVariable Long reviewId
     ) {
-        reviewService.deleteReview(reviewId, customUserDetails);
+        reviewService.deleteReview(reviewId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
     }
 }
