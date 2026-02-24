@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
@@ -21,12 +23,13 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/orders/{orderId}/reviews")
+    @PreAuthorize("hasRole('CUSTOMER') and @orderSecurity.isOwner(authentication , #orderId)")
     public ApiResponseDto<ReviewResponseDto> createReview(
             @PathVariable Long orderId,
             @Valid @RequestBody ReviewRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-       return ApiResponseDto.success(HttpStatus.OK , reviewService.createReview(orderId, request, customUserDetails));
+       return ApiResponseDto.success(HttpStatus.OK , reviewService.createReview(orderId, request, userDetails));
     }
 
     @GetMapping("/reviews")
@@ -49,11 +52,11 @@ public class ReviewController {
     }
 
     @DeleteMapping("/reviews/{reviewId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ApiResponseDto<Void> deleteReview(
-            @PathVariable Long reviewId,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails
+            @PathVariable Long reviewId
     ) {
-        reviewService.deleteReview(reviewId, customUserDetails);
+        reviewService.deleteReview(reviewId);
         return ApiResponseDto.successWithNoContent();
     }
 }

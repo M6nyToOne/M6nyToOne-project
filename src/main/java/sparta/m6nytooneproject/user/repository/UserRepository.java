@@ -29,4 +29,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 활성 상태의 전체 고객 수
     long countByRoleAndSignupStatus(UserRole role, SignupStatus status);
 
+    Integer countBySignupStatus(SignupStatus signupStatus);
 }

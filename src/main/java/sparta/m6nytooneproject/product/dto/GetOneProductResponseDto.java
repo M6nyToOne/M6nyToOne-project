@@ -4,6 +4,7 @@ import lombok.Getter;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.entity.Category;
 import sparta.m6nytooneproject.product.entity.Status;
+import sparta.m6nytooneproject.review.dto.GetRecentReviewsDto;
 import sparta.m6nytooneproject.review.entity.Review;
 
 import java.time.LocalDateTime;
@@ -24,9 +25,9 @@ public class GetOneProductResponseDto {
     private final String averageRate;
     private final int reviewCount;
     private final String ratings;
-    private final List<Review> recentReviews;
+    private final List<GetRecentReviewsDto> recentReviews;
 
-    public GetOneProductResponseDto(Product product, String averageRate, int reviewCount, String ratings, List<Review> recentReviews) {
+    public GetOneProductResponseDto(Product product, String averageRate, int reviewCount, String ratings, List<GetRecentReviewsDto> recentReviews) {
         this.id = product.getId();
         this.productName = product.getProductName();
         this.category = product.getCategory();

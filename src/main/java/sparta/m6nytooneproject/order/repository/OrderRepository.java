@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sparta.m6nytooneproject.order.dto.CustomerOrderSummaryDto;
 import sparta.m6nytooneproject.order.entity.Order;
+import sparta.m6nytooneproject.order.entity.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,4 +44,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 전체 주문 수 (오늘 주문 수) 를 위한 메서드
     long countByCreatedAtAfter(LocalDateTime localDateTime);
+
+    List<Order> findAllByCreatedAtAfter(LocalDateTime startOfDay);
+
+    long countByStatus(OrderStatus orderStatus);
+
+    List<Order> findTop10ByOrderByCreatedAtDesc();
 }
