@@ -189,7 +189,7 @@ public class UserController {
      * @return 회원 상세 정보
      */
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @userSecurity.isOwner(authentication, #userDetails.id)")
+    @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userDetails.id)")
     public ApiResponseDto<GetUserResponseDto> getMyInfo(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -258,7 +258,7 @@ public class UserController {
      * @return 고객 정보
      */
     @GetMapping("/customers/{userId}")
-    @PreAuthorize("@userSecurity.isOwner(authentication, #userId)")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @userSecurity.isOwner(authentication, #userId)")
     public ApiResponseDto<GetOneCustomerResponseDto> getOneCustomer(
             @PathVariable Long userId
     ) {
@@ -275,7 +275,7 @@ public class UserController {
      * @return 수정된 고객 정보
      */
     @PatchMapping("/customers/{userId}")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @userSecurity.isOwner(authentication, #userId)")
+    @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userId)")
     public ApiResponseDto<UpdateCustomerInfoResponseDto> updateCustomerInfo(
         @PathVariable Long userId,
         @RequestBody UpdateUserInfoRequestDto request
@@ -293,7 +293,7 @@ public class UserController {
      * @return 수정된 고객 정보
      */
     @PatchMapping("/customers/{userId}/status")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @userSecurity.isOwner(authentication, #userId)")
+    @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userId)")
     public ApiResponseDto<UpdateCustomerInfoResponseDto> updateCustomerStatus(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateCustomerStatusRequestDto request
@@ -309,7 +309,7 @@ public class UserController {
      * @return NO_CONTENT
      */
     @DeleteMapping("/customers/{userId}")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @userSecurity.isOwner(authentication, #userId)")
+    @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userId)")
     public ApiResponseDto<Void> deleteCustomer(
             @PathVariable Long userId
     ) {
