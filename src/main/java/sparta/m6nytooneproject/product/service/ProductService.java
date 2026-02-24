@@ -40,7 +40,7 @@ public class ProductService {
         log.info("userDetails.getId() " + userDetails.getId());
         User isAdmin = userService.getUserById(userDetails.getId());
 
-        userService.isAdmin(userDetails);
+//        userService.isAdmin(userDetails);
         log.info("admin" + isAdmin.getId());
         Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), isAdmin);
 
@@ -111,7 +111,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProduct(CustomUserDetails userDetails, Long productId, UpdateProductRequestDto request) {
-        userService.isAdmin(userDetails);
+//        userService.isAdmin(userDetails);
         Product product = getProductById(productId);
         product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
         return new ProductResponseDto(product);
@@ -119,7 +119,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProductStock(CustomUserDetails userDetails, Long productId, int stock) {
-        userService.isAdmin(userDetails);
+//        userService.isAdmin(userDetails);
 
         Product product = getProductById(productId);
 
@@ -130,7 +130,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProductStatus(CustomUserDetails userDetails, Long productId, UpdateProductStatusRequestDto request) {
-        userService.isAdmin(userDetails);
+//        userService.isAdmin(userDetails);
 
         Product product = getProductById(productId);
         product.setStatus(request.getStatus());
@@ -168,7 +168,7 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(CustomUserDetails userDetails, Long productId) {
-        userService.isAdmin(userDetails);
+//        userService.isAdmin(userDetails);
         Product product = getProductById(productId);
 
         product.discontinuedProduct();
