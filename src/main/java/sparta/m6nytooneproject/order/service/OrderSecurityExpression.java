@@ -11,7 +11,6 @@ import sparta.m6nytooneproject.security.CustomUserDetails;
 public class OrderSecurityExpression {
 
     private final OrderRepository orderRepository;
-
     public boolean isOwner(Authentication authentication, Long orderId) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
