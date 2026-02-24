@@ -12,10 +12,10 @@ public class CartSecurityExpression {
 
     private final CartRepository cartRepository;
 
-    public boolean isSelf(Authentication authentication, Long userId) {
+    public boolean isSelf(Authentication authentication, Long cartId) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        return cartRepository.findById(userId).map(cart -> cart.getUser().getId().equals(userDetails.getId()))
+        return cartRepository.findById(cartId).map(cart -> cart.getUser().getId().equals(userDetails.getId()))
                 .orElse(false);
     }
 }
