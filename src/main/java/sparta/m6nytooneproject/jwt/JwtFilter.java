@@ -1,5 +1,6 @@
 package sparta.m6nytooneproject.jwt;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,27 +36,34 @@ public class JwtFilter extends OncePerRequestFilter {
         // "Bearer" 제거
         String token = authorization.substring(7);
 
-        // 2. 토큰 만료 검증
-        if (jwtUtil.isExpired(token)) {
+        try {
+            // 2. 토큰 만료 검증
+//            if (jwtUtil.isExpired(token)) {
+//                filterChain.doFilter(request, response);
+//                return;
+//            }
+
+            // 3. 토큰에서 정보 꺼내기
+            String email = jwtUtil.getEmail(token);
+            Long id = jwtUtil.getId(token);
+            log.info(jwtUtil.getRole(token));
+            UserRole role = UserRole.valueOf(jwtUtil.getRole(token));
+
+            CustomUserDetails userDetails = new CustomUserDetails(
+                    User.ofToken(id, email, role)
+            );
+
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
             filterChain.doFilter(request, response);
+        }catch (ExpiredJwtException e){
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"message\": \"토큰이 만료되었습니다.\"}");
             return;
         }
-
-        // 3. 토큰에서 정보 꺼내기
-        String email = jwtUtil.getEmail(token);
-        Long id = jwtUtil.getId(token);
-        log.info(jwtUtil.getRole(token));
-        UserRole role = UserRole.valueOf(jwtUtil.getRole(token));
-
-        CustomUserDetails userDetails = new CustomUserDetails(
-                User.ofToken(id, email, role)
-        );
-
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities()
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        filterChain.doFilter(request, response);
     }
 }

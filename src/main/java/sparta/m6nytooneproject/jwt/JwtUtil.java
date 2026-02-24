@@ -39,7 +39,7 @@ public class JwtUtil {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
-                .parseSignedClaims(token)
+                .parseSignedClaims(token) // -> 이안에서 만료된 토큰을 검사
                 .getPayload();
     }
 
@@ -53,9 +53,5 @@ public class JwtUtil {
 
     public Long getId(String token) {
         return parseClaims(token).get("userId", Long.class);
-    }
-
-    public boolean isExpired(String token) {
-        return parseClaims(token).getExpiration().before(new Date());
     }
 }

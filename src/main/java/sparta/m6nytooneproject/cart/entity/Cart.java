@@ -33,8 +33,7 @@ public class Cart extends BaseEntity {
     private Product product;
 
     //생성자
-    public Cart(Long id, int quantity, User user, Product product) {
-        this.id = id;
+    public Cart(int quantity, User user, Product product) {
         this.quantity = quantity;
         this.user = user;
         this.product = product;

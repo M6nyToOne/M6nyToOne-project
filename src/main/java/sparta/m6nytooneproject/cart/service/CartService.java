@@ -13,7 +13,6 @@ import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.cart.repository.CartRepository;
 import sparta.m6nytooneproject.global.AuthConstants;
-import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.global.exception.cart.CartNotFoundException;
 import sparta.m6nytooneproject.global.exception.common.SessionNotActiveException;
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
@@ -39,7 +38,8 @@ public class CartService {
     private final ProductService productService; //상품 확인용
 
     //장바구니 생성
-    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request, CustomUserDetails userDetails) {
+    @Transactional
+    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request,CustomUserDetails userDetails) {
         // 1. 유저 존재 여부 확인
         User user = userService.getUserById(userDetails.getId());
         //1-1. 유저 상태 체크 로직추가
@@ -53,12 +53,16 @@ public class CartService {
         // 3. 기존 장바구니에 동일 상품이 있는지 확인
         Optional<Cart> existingCart = cartRepository.findByUserAndProduct(user, product);
         // 3-1. 동일 상품이 있으면 수량만 증가
-        existingCart.ifPresent(
-                cart -> cart.updateQuantity(cart.getQuantity() + request.getQuantity()));
-        // 4. 다른 상품인 경우 새로운 장바구니 생성
-        Cart cart = new Cart(user.getId(), request.getQuantity(), user, product);
-        Cart savedCart = cartRepository.save(cart);
-        return new CartResponseDto(savedCart);
+        if(existingCart.isPresent()){
+            Cart cart = existingCart.get();
+            cart.updateQuantity(cart.getQuantity() + request.getQuantity());
+            return new CartResponseDto(cart);
+        }else {
+            // 4. 다른 상품인 경우 새로운 장바구니 생성
+            Cart cart = new Cart(request.getQuantity(), user, product);
+            Cart savedCart = cartRepository.save(cart);
+            return new CartResponseDto(savedCart);
+        }
     }
 
     //페이징 처리 메서드
@@ -79,7 +83,7 @@ public class CartService {
         Cart cart = getCartById(cartId);
         return new CartResponseDto(cart);
     }
-
+    @Transactional
     //카트id로 수정(로그인한 본인이 만든 카트인지확인필요)
     public CartResponseDto updateCart(Long cartId, CartRequestDto request, Long loginUserId) {
         //해당id의 카트가 존재하는지 확인
@@ -89,7 +93,7 @@ public class CartService {
         cart.updateQuantity(request.getQuantity());
         return new CartResponseDto(cart);
     }
-
+    @Transactional
     public void deleteCart(Long cartId, Long loginUserId) {
         Cart cart = getCartById(cartId);
         checkUserAuth(cart, loginUserId);
@@ -97,7 +101,7 @@ public class CartService {
     }
 
     public void checkUserStatus(User user) {
-        if (!user.getSignupStatus().equals(SignupStatus.ACTIVE)) {
+        if (!SignupStatus.ACTIVE.equals(user.getSignupStatus())) {
             throw new SessionNotActiveException("현재 유저가 활성 상태가 아닙니다.");
         }
     }
