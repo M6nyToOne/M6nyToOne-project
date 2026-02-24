@@ -28,6 +28,7 @@ public class DashBoardController {
 
     // Summary 통계
     @GetMapping("/summary")
+
     public ApiResponseDto<GetSummaryResponseDto> getSummary() {
         return ApiResponseDto.success(HttpStatus.OK, dashBoardService.getSummary());
     }

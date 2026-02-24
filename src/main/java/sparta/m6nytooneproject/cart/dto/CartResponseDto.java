@@ -1,9 +1,13 @@
 package sparta.m6nytooneproject.cart.dto;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import sparta.m6nytooneproject.cart.entity.Cart;
 
 import java.time.LocalDateTime;
 
+@Getter
+@RequiredArgsConstructor
 public class CartResponseDto {
 
     final private Long id;

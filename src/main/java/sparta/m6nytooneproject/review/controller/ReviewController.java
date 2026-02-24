@@ -2,7 +2,6 @@ package sparta.m6nytooneproject.review.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -25,39 +24,39 @@ public class ReviewController {
 
     @PostMapping("/orders/{orderId}/reviews")
     @PreAuthorize("hasRole('CUSTOMER') and @orderSecurity.isOwner(authentication , #orderId)")
-    public ResponseEntity<ApiResponseDto<ReviewResponseDto>> createReview(
+    public ApiResponseDto<ReviewResponseDto> createReview(
             @PathVariable Long orderId,
             @Valid @RequestBody ReviewRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseDto.success(reviewService.createReview(orderId, request, customUserDetails)));
+       return ApiResponseDto.success(HttpStatus.OK , reviewService.createReview(orderId, request, userDetails));
     }
 
     @GetMapping("/reviews")
-    public ResponseEntity<ApiResponseDto<Page<GetReviewListResponseDto>>> getAllReviews(
+    public ApiResponseDto<GetReviewListResponseDto> getAllReviews(
             @PageableDefault Pageable pageable,
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) String productName,
             @RequestParam(required = false) int reviewRate
     ) {
-        return ResponseEntity
-                .ok(ApiResponseDto.success(reviewService.getAllReviews(pageable, userName, productName, reviewRate)));
+        return ApiResponseDto.pagination(HttpStatus.OK,
+                reviewService.getAllReviews(pageable, userName, productName, reviewRate) ,"성공적으로 조회하였습니다.");
+
     }
 
     @GetMapping("/reviews/{reviewId}")
-    public ResponseEntity<ApiResponseDto<GetReviewDetailResponseDto>> getOneReview(
+    public ApiResponseDto<GetReviewDetailResponseDto> getOneReview(
             @PathVariable Long reviewId
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(reviewService.getOneReview(reviewId)));
+        return ApiResponseDto.success(HttpStatus.OK, reviewService.getOneReview(reviewId));
     }
 
     @DeleteMapping("/reviews/{reviewId}")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
-    public ResponseEntity<ApiResponseDto<Void>> deleteReview(
+    public ApiResponseDto<Void> deleteReview(
             @PathVariable Long reviewId
     ) {
         reviewService.deleteReview(reviewId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
+        return ApiResponseDto.successWithNoContent();
     }
 }

@@ -1,5 +1,6 @@
 package sparta.m6nytooneproject.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,6 +62,21 @@ public class SecurityConfig {
                                 "/users/signup").permitAll()
 //                        .requestMatchers("/users/**").hasAnyRole("SUPER", "OPER", "MARKET", "CS")
                         .anyRequest().authenticated());
+
+        http.exceptionHandling(exception -> exception
+                // 인증 안된 경우 (토큰 없음, 만료 등)
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"message\": \"인증이 필요합니다.\"}");
+                })
+                // 인증은 됐지만 권한이 없는 경우
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"message\": \"접근 권한이 없습니다.\"}");
+                })
+        );
 
         // LoginFilter 필터 전에 JwtFilter 로 검증 하기.
         http.addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
