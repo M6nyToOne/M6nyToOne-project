@@ -15,7 +15,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("""
             SELECT r
             FROM Review r
-            WHERE (:userName IS NULL OR :userName = '' OR r.customer.userName = :username)
+            WHERE (:userName IS NULL OR :userName = '' OR r.customer.userName = :userName)
             AND (:productName IS NULL OR :productName = '' OR r.product.productName = :productName)
             AND (:reviewRate IS NULL OR r.reviewRate = :reviewRate)
             """)

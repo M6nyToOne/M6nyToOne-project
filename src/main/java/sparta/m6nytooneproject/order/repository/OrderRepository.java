@@ -23,7 +23,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 고객 리스트 조회 데이터 확장 (총 주문 수, 총 구매 금액)
     @Query("""
-        SELECT CustomerOrderSummaryDto(o.customer.id, count(o.id), coalesce(sum(o.productPrice * o.quantity), 0) )
+        SELECT new sparta.m6nytooneproject.order.dto.CustomerOrderSummaryDto(o.customer.id, count(o.id), coalesce(sum(o.productPrice * o.quantity), 0L) )
         FROM Order o
         WHERE o.customer.id IN :customerIds
         AND o.status = sparta.m6nytooneproject.order.entity.OrderStatus.COMPLETED
@@ -33,7 +33,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 고객 상세 조회 데이터 확장 (총 주문 수, 총 구매 금액)
     @Query("""
-        SELECT CustomerOrderSummaryDto(o.customer.id, count(o.id), coalesce(sum(o.productPrice * o.quantity), 0) )
+        SELECT new sparta.m6nytooneproject.order.dto.CustomerOrderSummaryDto(o.customer.id, count(o.id), coalesce(sum(o.productPrice * o.quantity), 0L) )
         FROM Order o
         WHERE o.customer.id IN :customerId
         AND o.status = sparta.m6nytooneproject.order.entity.OrderStatus.COMPLETED
