@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import sparta.m6nytooneproject.review.entity.Review;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByOrderId(Long orderId);
@@ -34,4 +35,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         FROM Review r
     """)
     Double findAverageRating();
+
+    @Query("SELECT r FROM Review r WHERE :rate IS NULL OR r.reviewRate = :rate")
+    List<Review> findRateReview(@Param("rate") int rate);
 }

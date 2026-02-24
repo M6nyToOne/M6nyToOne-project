@@ -14,6 +14,7 @@ import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.entity.Category;
 import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
+import sparta.m6nytooneproject.review.dto.GetRecentReviewsDto;
 import sparta.m6nytooneproject.review.entity.Review;
 import sparta.m6nytooneproject.review.repository.ReviewRepository;
 import sparta.m6nytooneproject.security.CustomUserDetails;
@@ -21,6 +22,7 @@ import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.service.UserService;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +108,8 @@ public class ProductService {
         String ratingCounts = mapper.writeValueAsString(rating);
         // 최신 리뷰
         List<Review> recentReviews = reviewRepository.findTop3ByProductIdOrderByCreatedAtDesc(productId);
-        return new GetOneProductResponseDto(product, averageRate, reviewCount, ratingCounts, recentReviews);
+        List<GetRecentReviewsDto> dtos = recentReviews.stream().map(GetRecentReviewsDto::new).toList();
+        return new GetOneProductResponseDto(product, averageRate, reviewCount, ratingCounts, dtos);
     }
 
     @Transactional

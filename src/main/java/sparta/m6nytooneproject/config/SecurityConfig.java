@@ -59,7 +59,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/users/signup").permitAll()
-                        .requestMatchers("/users/**").hasAnyRole("SUPER", "OPER", "MARKET", "CS")
+//                        .requestMatchers("/users/**").hasAnyRole("SUPER", "OPER", "MARKET", "CS")
                         .anyRequest().authenticated());
 
         // LoginFilter 필터 전에 JwtFilter 로 검증 하기.

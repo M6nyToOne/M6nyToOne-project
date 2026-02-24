@@ -26,5 +26,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // 재고가 5개 이하인 전체 상품 수
     long countByStockLessThanEqual(int stock);
 
+    long countByStatus(Status status);
+
+    int countByCategory(Category category);
 }
 

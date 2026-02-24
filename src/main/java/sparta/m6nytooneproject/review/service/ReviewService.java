@@ -71,9 +71,6 @@ public class ReviewService {
         if (reviewRepository.existsById(reviewId)) {
             throw new ReviewNotFoundException("존재하지 않는 리뷰입니다.");
         }
-        if (customUserDetails.getRole().equals(UserRole.CUSTOMER)) {
-            throw new UnAuthorizedException("관리자만 리뷰를 삭제할 수 있습니다.");
-        }
         reviewRepository.deleteById(reviewId);
     }
 }
