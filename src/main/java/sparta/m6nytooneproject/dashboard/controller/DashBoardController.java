@@ -1,7 +1,7 @@
 package sparta.m6nytooneproject.dashboard.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,10 +20,10 @@ public class DashBoardController {
 
     // Summary 통계
     @GetMapping("/summary")
-    public ResponseEntity<ApiResponseDto<GetSummaryResponseDto>> getSummary(
+    public ApiResponseDto<GetSummaryResponseDto> getSummary(
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
-        return ResponseEntity.ok(ApiResponseDto.success(dashBoardService.getSummary(userDetails)));
+        return ApiResponseDto.success(HttpStatus.OK,dashBoardService.getSummary(userDetails));
     }
 
     // Widgets 데이터

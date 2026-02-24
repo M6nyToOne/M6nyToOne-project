@@ -2,9 +2,7 @@ package sparta.m6nytooneproject.user.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,11 +27,10 @@ public class UserController {
      * @return 생성된 유저 정보
      */
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponseDto<UserResponseDto>> createUser(
+    public ApiResponseDto<UserResponseDto> createUser(
             @Valid @RequestBody UserRequestDto requestDto
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseDto.success(userService.createUser(requestDto)));
+        return ApiResponseDto.success(HttpStatus.CREATED,userService.createUser(requestDto));
     }
 
     /**
@@ -43,10 +40,10 @@ public class UserController {
      * @return NO_CONTENT
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponseDto<Void>> login(
+    public ApiResponseDto<Void> login(
             @Valid @RequestBody LoginRequestDto request
     ) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
+        return ApiResponseDto.success(HttpStatus.CREATED ,null);
     }
 
     /**
@@ -56,8 +53,8 @@ public class UserController {
      * @return NO_CONTENT
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponseDto<Void>> logout() {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
+    public ApiResponseDto<Void> logout() {
+        return ApiResponseDto.successWithNoContent();
     }
 
     /**
@@ -66,17 +63,16 @@ public class UserController {
      *
      * @param page - 페이지
      * @param size - 페이지 당 데이터 크기
-     * @param userDetails - jwt token
      *
      * @return 회원 정보 pagination
      */
     @GetMapping("/pendings")
-    public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getPendingUsers(
+    @PreAuthorize("hasRole('SUPER')")
+    public ApiResponseDto<UserResponseDto> getPendingUsers(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestParam(defaultValue = "10") int size
             ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getPendingUsers(page, size, userDetails)));
+        return ApiResponseDto.pagination(HttpStatus.OK, userService.getPendingUsers(page, size),"성공적으로 조회하였습니다." );
     }
 
     /**
@@ -85,18 +81,16 @@ public class UserController {
      *
      * @param userId - 변경할 유저 ID
      * @param request - 변경 상태, 거절시 거절사유 포함
-     * @param userDetails - jwt token
      *
      * @return 변경된 유저 정보
      */
     @PatchMapping("/pendings/{userId}")
     @PreAuthorize("hasRole('SUPER')")
-    public ResponseEntity<ApiResponseDto<UpdateUserStatusResponseDto>> updatePendingUser(
+    public ApiResponseDto<UpdateUserStatusResponseDto> updatePendingUser(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateUserStatusRequestDto request
-//            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request)));
+        return ApiResponseDto.success(HttpStatus.OK, userService.updatePendingUser(userId, request));
     }
 
     /**
@@ -105,18 +99,16 @@ public class UserController {
      *
      * @param page - 페이지
      * @param size - 페이지 당 데이터 크기
-     * @param userDetails - jwt token
      *
      * @return 승인된 관리자 정보 pagination
      */
     @GetMapping("/registered")
-    public ResponseEntity<ApiResponseDto<Page<UserResponseDto>>> getRegisteredUsers(
+    @PreAuthorize("hasRole('SUPER')")
+    public ApiResponseDto<UserResponseDto> getRegisteredUsers(
             @RequestParam int page,
-            @RequestParam int size,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestParam int size
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getRegisteredUsers(page, size, userDetails)));
-
+        return ApiResponseDto.pagination(HttpStatus.OK, userService.getRegisteredUsers(page, size),"성공적으로 조회하였습니다." );
     }
 
     /**
@@ -124,16 +116,15 @@ public class UserController {
      * 접근 권한 : 슈퍼 관리자.
      *
      * @param userId - 조회할 유저 정보
-     * @param userDetails - jwt token
      *
      * @return 상세 유저 정보
      */
     @GetMapping("/registered/{userId}")
-    public ResponseEntity<ApiResponseDto<UserResponseDto>> getOneRegisteredUser(
-            @PathVariable Long userId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    @PreAuthorize("hasRole('SUPER')")
+    public ApiResponseDto<UserResponseDto> getOneRegisteredUser(
+            @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneRegisteredUser(userId,userDetails)));
+        return ApiResponseDto.success(HttpStatus.OK, userService.getOneRegisteredUser(userId));
     }
 
     /**
@@ -142,17 +133,16 @@ public class UserController {
      *
      * @param userId - 수정할 유저 정보
      * @param request - 수정할 정보 [이름, 이메일, 전화번호 수정 가능]
-     * @param userDetails - jwt token
      *
      * @return 수정된 유저 정보
      */
     @PatchMapping("/registered/{userId}/info")
-    public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateUserInfo(
+    @PreAuthorize("hasRole('SUPER')")
+    public ApiResponseDto<UpdateUserInfoResponseDto> updateUserInfo(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserInfoRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @Valid @RequestBody UpdateUserInfoRequestDto request
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateUserInfo(userId, request, userDetails)));
+        return ApiResponseDto.success(HttpStatus.OK, userService.updateUserInfo(userId, request));
     }
 
     /**
@@ -161,17 +151,16 @@ public class UserController {
      *
      * @param userId - 수정할 유저 정보
      * @param request - 수정할 role
-     * @param userDetails - jwt token
      *
-     * @return 수정된 유저 정보
+     * @return 수정된 관리자 정보
      */
     @PatchMapping("/registered/{userId}/status")
-    public ResponseEntity<ApiResponseDto<UpdateRegisteredUserResponseDto>> updateRegisteredUser(
+    @PreAuthorize("hasRole('SUPER')")
+    public ApiResponseDto<UpdateRegisteredUserResponseDto> updateRegisteredUser(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateRegisteredRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @Valid @RequestBody UpdateRegisteredRequestDto request
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateRegisteredUser(userId, request, userDetails)));
+        return ApiResponseDto.success(HttpStatus.OK,userService.updateRegisteredUser(userId, request));
     }
 
     /**
@@ -179,17 +168,16 @@ public class UserController {
      * 접근 권한 : 슈퍼 관리자.
      *
      * @param userId - 수정할 유저 정보
-     * @param userDetails - jwt token
      *
      * @return NO_CONTENT
      */
     @DeleteMapping("/registered/{userId}")
-    public ResponseEntity<ApiResponseDto<Void>> deleteUser(
-            @PathVariable Long userId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    @PreAuthorize("hasRole('SUPER')")
+    public ApiResponseDto<Void> deleteUser(
+            @PathVariable Long userId
     ) {
-        userService.deleteUser(userId, userDetails);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
+        userService.deleteUser(userId);
+        return ApiResponseDto.successWithNoContent();
     }
 
     /**
@@ -201,14 +189,11 @@ public class UserController {
      * @return 회원 상세 정보
      */
     @GetMapping("/me")
-    public ResponseEntity<ApiResponseDto<GetUserResponseDto>> getMyInfo(
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @userSecurity.isOwner(authentication, #userDetails.id)")
+    public ApiResponseDto<GetUserResponseDto> getMyInfo(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
-        }
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getMyInfo(userDetails.getId())));
+       return ApiResponseDto.success(HttpStatus.OK,userService.getMyInfo(userDetails.getId()));
     }
 
     /**
@@ -221,37 +206,30 @@ public class UserController {
      * @return 회원 상세 정보
      */
     @PatchMapping("/me/update")
-    public ResponseEntity<ApiResponseDto<UpdateUserInfoResponseDto>> updateMyInfo(
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') and @userSecurity.isOwner(authentication, #userDetails.id)")
+    public ApiResponseDto<UpdateUserInfoResponseDto> updateMyInfo(
             @Valid @RequestBody UpdateUserInfoRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
-        }
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateMyInfo(userDetails.getId(), request)));
+        return ApiResponseDto.success(HttpStatus.OK,userService.updateMyInfo(userDetails.getId(), request));
     }
 
     /**
-     *  내 프로필 수정 (관리자 자신)
-     * 접근 권한 : 모든 관리자.
+     *  내 비밀번호 수정
      *
-     * @param request - 수정 데이터  [이름, 이메일, 전화번호 수정 가능]
+     * @param request - 수정 데이터
      * @param userDetails - jwt token
      *
      * @return 회원 상세 정보
      */
     @PatchMapping("/me/password")
-    public ResponseEntity<ApiResponseDto<UpdateMyPasswordResponseDto>> updateMyPassword(
+    @PreAuthorize("@userSecurity.isOwner(authentication, #userDetails.id)")
+    public ApiResponseDto<Void> updateMyPassword(
             @Valid @RequestBody UpdateMyPasswordRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponseDto.error("세션이 존재하지 않습니다."));
-        }
         userService.changeMyPassword(userDetails.getId(), request);
-        return ResponseEntity.ok(ApiResponseDto.successWithNoContent());
+        return ApiResponseDto.successWithNoContent();
     }
 
     /**
@@ -260,34 +238,31 @@ public class UserController {
      *
      * @param page - 페이지
      * @param size - 페이지 당 데이터 크기
-     * @param userDetails - jwt token
      *
      * @return 고객 정보 pagination
      */
     @GetMapping("/customers")
-    public ResponseEntity<ApiResponseDto<Page<GetAllCustomerResponseDto>>> getAllCustomer(
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
+    public ApiResponseDto<GetAllCustomerResponseDto> getAllCustomer(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getAllCustomer(page, size, userDetails)));
+        return ApiResponseDto.pagination(HttpStatus.OK, userService.getAllCustomer(page, size) ,"성공적으로 조회 하였습니다.");
     }
 
     /**
      * 고객 정보 상세 조회
-     * 접근 권한 : 모든 관리자.
      *
      * @param userId - 조회할 유저 ID
-     * @param userDetails - jwt token
      *
      * @return 고객 정보
      */
     @GetMapping("/customers/{userId}")
-    public ResponseEntity<ApiResponseDto<GetOneCustomerResponseDto>> getOneCustomer(
-            @PathVariable Long userId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    @PreAuthorize("@userSecurity.isOwner(authentication, #userId)")
+    public ApiResponseDto<GetOneCustomerResponseDto> getOneCustomer(
+            @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.getOneCustomer(userId, userDetails)));
+        return ApiResponseDto.success(HttpStatus.OK,userService.getOneCustomer(userId));
     }
 
     /**
@@ -296,17 +271,16 @@ public class UserController {
      *
      * @param userId - 수정할 유저 ID
      * @param request - 슈정할 유저 정보
-     * @param userDetails - jwt token
      *
      * @return 수정된 고객 정보
      */
     @PatchMapping("/customers/{userId}")
-    public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerInfo(
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @userSecurity.isOwner(authentication, #userId)")
+    public ApiResponseDto<UpdateCustomerInfoResponseDto> updateCustomerInfo(
         @PathVariable Long userId,
-        @RequestBody UpdateUserInfoRequestDto request,
-        @AuthenticationPrincipal CustomUserDetails userDetails
+        @RequestBody UpdateUserInfoRequestDto request
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomer(userId, request, userDetails)));
+        return ApiResponseDto.success(HttpStatus.OK ,userService.updateCustomer(userId, request));
     }
 
     /**
@@ -315,34 +289,31 @@ public class UserController {
      *
      * @param userId - 수정할 유저 ID
      * @param request - 슈정할 유저 상태 정보
-     * @param userDetails - jwt token
      *
      * @return 수정된 고객 정보
      */
     @PatchMapping("/customers/{userId}/status")
-    public ResponseEntity<ApiResponseDto<UpdateCustomerInfoResponseDto>> updateCustomerStatus(
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @userSecurity.isOwner(authentication, #userId)")
+    public ApiResponseDto<UpdateCustomerInfoResponseDto> updateCustomerStatus(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateCustomerStatusRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @Valid @RequestBody UpdateCustomerStatusRequestDto request
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updateCustomerStatus(userId, request, userDetails)));
+        return ApiResponseDto.success(HttpStatus.OK, userService.updateCustomerStatus(userId, request));
     }
 
     /**
      * 고객 회원 탈퇴
-     * 접근 권한 : 모든 권한
      *
      * @param userId - 수정할 유저 ID
-     * @param userDetails - jwt token
      *
      * @return NO_CONTENT
      */
     @DeleteMapping("/customers/{userId}")
-    public ResponseEntity<ApiResponseDto<Void>> deleteCustomer(
-            @PathVariable Long userId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    @PreAuthorize("hasAnyRole('SUPER','OPER','CS') or @userSecurity.isOwner(authentication, #userId)")
+    public ApiResponseDto<Void> deleteCustomer(
+            @PathVariable Long userId
     ) {
-        userService.deleteCustomer(userId, userDetails);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseDto.successWithNoContent());
+        userService.deleteCustomer(userId);
+        return ApiResponseDto.successWithNoContent();
     }
 }

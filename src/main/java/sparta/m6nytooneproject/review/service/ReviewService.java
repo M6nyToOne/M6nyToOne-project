@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sparta.m6nytooneproject.global.dto.SessionUserDto;
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
 import sparta.m6nytooneproject.global.exception.order.OrderNotFoundException;
 import sparta.m6nytooneproject.global.exception.review.AlreadyExistingReviewException;
