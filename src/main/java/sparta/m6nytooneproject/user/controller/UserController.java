@@ -105,8 +105,8 @@ public class UserController {
     @GetMapping("/registered")
     @PreAuthorize("hasRole('SUPER')")
     public ApiResponseDto<UserResponseDto> getRegisteredUsers(
-            @RequestParam int page,
-            @RequestParam int size
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponseDto.pagination(HttpStatus.OK, userService.getRegisteredUsers(page, size),"성공적으로 조회하였습니다." );
     }
