@@ -100,8 +100,8 @@ public class UserService {
 
     // 슈퍼 관리자가 승인대기중인 관리자 승인(업데이트) / 각종 상태 변경
     @Transactional
-    public UpdateUserStatusResponseDto updatePendingUser(Long userId, UpdateUserStatusRequestDto request, CustomUserDetails userDetails) {
-        isSuperAdmin(userDetails);
+    public UpdateUserStatusResponseDto updatePendingUser(Long userId, UpdateUserStatusRequestDto request) {
+//        isSuperAdmin(userDetails);
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         // 슈퍼 관리자가 승인대기 상태를 활성/거부 상태로 업데이트
@@ -153,6 +153,7 @@ public class UserService {
     // 등록된 관리자 역할 변경
     @Transactional
     public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto request, CustomUserDetails userDetails) {
+        System.out.println("userDetails = " + userDetails.getRole());
         isSuperAdmin(userDetails);
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());

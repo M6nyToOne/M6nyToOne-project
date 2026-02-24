@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.global.AuthConstants;
@@ -26,6 +27,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER','OPER')")
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> createProduct(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ProductRequestDto request
@@ -46,6 +48,7 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER')")
     public ResponseEntity<ApiResponseDto<GetOneProductResponseDto>> getOneProduct(
             @PathVariable Long productId
     ) {
@@ -53,6 +56,7 @@ public class ProductController {
     }
 
     @PatchMapping ("/{productId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER')")
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProduct(
             @PathVariable Long productId,
             @Valid @RequestBody UpdateProductRequestDto request,
@@ -62,6 +66,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{productId}/stocks")
+    @PreAuthorize("hasAnyRole('SUPER','OPER')")
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProductStock(
             @PathVariable Long productId,
             @Valid @RequestBody UpdateProductStockRequestDto request,
@@ -72,6 +77,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{productId}/status")
+    @PreAuthorize("hasAnyRole('SUPER','OPER')")
     public ResponseEntity<ApiResponseDto<ProductResponseDto>> updateProductStatus(
             @PathVariable Long productId,
             @Valid @RequestBody UpdateProductStatusRequestDto request,
@@ -81,6 +87,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER')")
     public ResponseEntity<ApiResponseDto<Void>> deleteProduct(
             @PathVariable Long productId,
             @AuthenticationPrincipal CustomUserDetails userDetails

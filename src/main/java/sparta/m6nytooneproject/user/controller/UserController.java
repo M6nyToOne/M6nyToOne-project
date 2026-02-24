@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
@@ -57,12 +58,13 @@ public class UserController {
 
     // 슈퍼 관리자가 승인 대기중인 관리자 상태 변경 (상태 업데이트) / 각 종 상태 변경
     @PatchMapping("/pendings/{userId}")
+    @PreAuthorize("hasRole('SUPER')")
     public ResponseEntity<ApiResponseDto<UpdateUserStatusResponseDto>> updatePendingUser(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserStatusRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @Valid @RequestBody UpdateUserStatusRequestDto request
+//            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request, userDetails)));
+        return ResponseEntity.ok(ApiResponseDto.success(userService.updatePendingUser(userId, request)));
     }
 
     // 슈퍼 관리자가 등록된 전체 관리자 조회
