@@ -64,7 +64,7 @@ public class ReviewService {
     }
 
     public void deleteReview(Long reviewId) {
-        if (reviewRepository.existsById(reviewId)) {
+        if (!reviewRepository.existsById(reviewId)) {
             throw new ReviewNotFoundException("존재하지 않는 리뷰입니다.");
         }
         reviewRepository.deleteById(reviewId);
