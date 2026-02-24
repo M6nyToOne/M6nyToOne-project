@@ -52,14 +52,12 @@ public class SecurityConfig {
         http.authorizeHttpRequests((auth) -> auth
                 //permitAll 누구나 접근 가능. hasRole 해당 역할을 가진 유저만 접근 가능. authenticated 로그인한 유저만 접근 가능.
                         .requestMatchers(
-                                "/products/**",
                                 "/users/login",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/users/signup").permitAll()
-//                        .requestMatchers("/admin/**").hasAnyRole("SUPER", "OPER", "MARKET", "CS")
-//                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/users/**").hasAnyRole("SUPER", "OPER", "MARKET", "CS")
                         .anyRequest().authenticated());
 
         // LoginFilter 필터 전에 JwtFilter 로 검증 하기.

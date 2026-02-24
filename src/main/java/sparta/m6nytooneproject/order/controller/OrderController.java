@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
@@ -22,6 +23,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/{cartId}/customers")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> createOrderByCustomer(
             @RequestBody @Valid OrderRequestByCustomerDto request,
             @PathVariable Long cartId,
@@ -31,8 +33,8 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseDto.success(orderService.createOrderByCustomer(request, userDetails.getId(), cartId)));
     }
-
     @PostMapping("/{customerId}/cs")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> createOrderByCs(
             @RequestBody @Valid OrderRequestByCsDto request,
             @PathVariable Long customerId,
@@ -50,11 +52,11 @@ public class OrderController {
             @RequestParam(required = false, defaultValue = "10") int size,
             @RequestParam(required = false, defaultValue = "CREATED_AT")  OrderSort orderSort
     ) {
-        log.info("getAllOrders called");
         return ResponseEntity.ok(ApiResponseDto.success(orderService.getAllOrders(page, size,orderSort, username)));
     }
 
     @GetMapping("{orderId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @orderSecurity.isOwner(authentication , #orderId)")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> getOneOrder(
             @PathVariable Long orderId
     ) {
@@ -62,14 +64,16 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/complete")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> completeOrder(
             @PathVariable Long orderId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponseDto.success(orderService.completeOrder(orderId ,userDetails.getRole())));
+        return ResponseEntity.ok(ApiResponseDto.success(orderService.completeOrder(orderId)));
     }
 
     @PatchMapping("/{orderId}/status")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ResponseEntity<ApiResponseDto<OrderDetailResponseDto>> updateOrderStatus(
             @PathVariable Long orderId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -78,6 +82,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}/cancel")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @orderSecurity.isOwner(authentication , #orderId)")
     public ResponseEntity<ApiResponseDto<Void>> cancelOrder(
             @PathVariable Long orderId,
             @RequestParam String cancelReason,
