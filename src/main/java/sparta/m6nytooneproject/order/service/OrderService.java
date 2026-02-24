@@ -14,6 +14,7 @@ import sparta.m6nytooneproject.global.exception.order.CancelOrderException;
 import sparta.m6nytooneproject.global.exception.order.InvalidOrderStatusException;
 import sparta.m6nytooneproject.global.exception.order.OrderException;
 import sparta.m6nytooneproject.global.exception.order.OrderNotFoundException;
+import sparta.m6nytooneproject.global.exception.user.UserRoleNotMatchException;
 import sparta.m6nytooneproject.order.dto.OrderDetailResponseDto;
 import sparta.m6nytooneproject.order.dto.OrderListResponseDto;
 import sparta.m6nytooneproject.order.dto.OrderRequestByCsDto;
@@ -63,6 +64,9 @@ public class OrderService {
     @Transactional
     public OrderDetailResponseDto createOrderByAdmin(OrderRequestByCsDto request, Long customerId , Long adminId) {
         User customer = userService.getUserById(customerId);
+        if(!customer.getRole().equals(UserRole.CUSTOMER)) {
+            throw new UserRoleNotMatchException("주문 대상이 고객이 아닙니다.");
+        }
         User admin = userService.getUserById(adminId);
         Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
 
@@ -110,10 +114,17 @@ public class OrderService {
         return OrderDetailResponseDto.from(order);
     }
 
-    public Page<OrderListResponseDto> getAllOrders(int page, int size, OrderSort orderSort, String username) {
+    public Page<OrderListResponseDto> getAllOrders(int page, int size, OrderSort orderSort, String username, OrderStatus orderStatus) {
         Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by(orderSort.getProperty()).descending());
 
-        Page<Order> orders = orderRepository.search(username, pageable);
+        Page<Order> orders = orderRepository.searchByName(orderStatus, username, pageable);
+        return orders.map(OrderListResponseDto::from);
+    }
+
+    public Page<OrderListResponseDto> getOrdersByCustomerId(int page, int size, OrderSort orderSort, Long customerId) {
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by(orderSort.getProperty()).descending());
+
+        Page<Order> orders = orderRepository.searchByCustomerId(customerId, pageable);
         return orders.map(OrderListResponseDto::from);
     }
 

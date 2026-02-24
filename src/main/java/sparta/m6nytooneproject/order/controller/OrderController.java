@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
 import sparta.m6nytooneproject.order.dto.*;
 import sparta.m6nytooneproject.order.entity.OrderSort;
+import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.service.OrderService;
 import sparta.m6nytooneproject.security.CustomUserDetails;
 
@@ -46,20 +47,35 @@ public class OrderController {
         );
     }
 
-    @GetMapping
+    @GetMapping("/lists")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ApiResponseDto<OrderListResponseDto> getAllOrders(
             @RequestParam(required = false) String username,
+            @RequestParam(required = false , defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false, defaultValue = "CREATED_AT")  OrderSort orderSort
+    ) {
+        return ApiResponseDto.pagination(HttpStatus.OK,
+                orderService.getAllOrders(page, size, orderSort, username, status),
+                "정상적으로 조회 되었습니다"
+        );
+    }
+
+    @GetMapping("/list/customers")
+    public ApiResponseDto<OrderListResponseDto> getAllOrdersByCustomer(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false , defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int size,
             @RequestParam(required = false, defaultValue = "CREATED_AT")  OrderSort orderSort
     ) {
         return ApiResponseDto.pagination(HttpStatus.OK,
-                orderService.getAllOrders(page, size,orderSort, username),
+                orderService.getOrdersByCustomerId(page, size,orderSort, userDetails.getId()),
                 "정상적으로 조회 되었습니다"
         );
     }
 
-    @GetMapping("{orderId}")
+    @GetMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @orderSecurity.isOwner(authentication , #orderId)")
     public ApiResponseDto<OrderDetailResponseDto> getOneOrder(
             @PathVariable Long orderId
@@ -72,8 +88,7 @@ public class OrderController {
     @PatchMapping("/{orderId}/complete")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
     public ApiResponseDto<OrderDetailResponseDto> completeOrder(
-            @PathVariable Long orderId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable Long orderId
     ) {
         return ApiResponseDto.success(HttpStatus.OK,
                 orderService.completeOrder(orderId)

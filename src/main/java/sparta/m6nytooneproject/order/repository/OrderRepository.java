@@ -18,9 +18,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         SELECT o
         FROM Order o
         WHERE (:userName IS NULL OR :userName = '' OR o.userName = :userName)
+          AND (:orderStatus IS NULL OR o.status = :orderStatus)
     """)
-    Page<Order> search(@Param("userName") String userName,
-                       Pageable pageable);
+    Page<Order> searchByName(
+            @Param("orderStatus") OrderStatus orderStatus,
+            @Param("userName") String userName,
+                             Pageable pageable);
+
+    @Query("""
+    SELECT o
+    FROM Order o
+    WHERE (:customerId IS NOT NULL AND o.customer.id = :customerId)
+    """)
+    Page<Order> searchByCustomerId(@Param("customerId") Long customerId, Pageable pageable);
 
     // 고객 리스트 조회 데이터 확장 (총 주문 수, 총 구매 금액)
     @Query("""
