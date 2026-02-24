@@ -25,11 +25,11 @@ public interface ApiResponseDto<T> {
                 );
     }
 
-    static <T> ApiResponseDto<T> error(HttpStatus status, String message) {
-        return new ErrorDto<>(status, message, null);
+    static <T> ApiResponseDto<T> error(String message) {
+        return new ErrorDto<>(message, null);
     }
 
-    static <T> ApiResponseDto<T> errorWithMap(HttpStatus status,T map, String message) {
-        return new ErrorDto<>(status, message, map);
+    static <T> ApiResponseDto<T> errorWithMap(T map, String message) {
+        return new ErrorDto<>(message, map);
     }
 }
