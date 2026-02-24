@@ -105,8 +105,8 @@ public class UserController {
     @GetMapping("/registered")
     @PreAuthorize("hasRole('SUPER')")
     public ApiResponseDto<UserResponseDto> getRegisteredUsers(
-            @RequestParam int page,
-            @RequestParam int size
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponseDto.pagination(HttpStatus.OK, userService.getRegisteredUsers(page, size),"성공적으로 조회하였습니다." );
     }
@@ -189,7 +189,7 @@ public class UserController {
      * @return 회원 상세 정보
      */
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userDetails.id)")
+    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @userSecurity.isOwner(authentication, #userDetails.id)")
     public ApiResponseDto<GetUserResponseDto> getMyInfo(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -234,7 +234,7 @@ public class UserController {
 
     /**
      *  플랫폼 이용하는 모든 고객 조회 (페이징)
-     * 접근 권한 : 모든 관리자.
+     * 접근 권한 : 슈퍼 관리자.
      *
      * @param page - 페이지
      * @param size - 페이지 당 데이터 크기
@@ -242,7 +242,7 @@ public class UserController {
      * @return 고객 정보 pagination
      */
     @GetMapping("/customers")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS')")
+    @PreAuthorize("hasAnyRole('SUPER')")
     public ApiResponseDto<GetAllCustomerResponseDto> getAllCustomer(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
@@ -258,7 +258,7 @@ public class UserController {
      * @return 고객 정보
      */
     @GetMapping("/customers/{userId}")
-    @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @userSecurity.isOwner(authentication, #userId)")
+    @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userId)")
     public ApiResponseDto<GetOneCustomerResponseDto> getOneCustomer(
             @PathVariable Long userId
     ) {
@@ -267,7 +267,7 @@ public class UserController {
 
     /**
      * 고객 정보 수정
-     * 접근 권한 : 모든 관리자.
+     * 접근 권한 : 슈퍼 관리자.
      *
      * @param userId - 수정할 유저 ID
      * @param request - 슈정할 유저 정보
@@ -285,7 +285,7 @@ public class UserController {
 
     /**
      * 고객 상태 수정
-     * 접근 권한 : 모든 관리자.
+     * 접근 권한 : 슈퍼 관리자.
      *
      * @param userId - 수정할 유저 ID
      * @param request - 슈정할 유저 상태 정보
