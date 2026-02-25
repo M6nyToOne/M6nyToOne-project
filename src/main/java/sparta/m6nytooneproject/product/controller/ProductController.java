@@ -27,7 +27,7 @@ public class ProductController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ProductRequestDto request
     ) {
-        ProductResponseDto result = productService.createProduct(userDetails, request);
+        ProductResponseDto result = productService.createProduct(userDetails.getId(), request);
 
         return ApiResponseDto.success(HttpStatus.CREATED, result);
     }

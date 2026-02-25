@@ -41,9 +41,9 @@ public class ProductService {
     private final ReviewRepository reviewRepository;
 
     @Transactional
-    public ProductResponseDto createProduct(CustomUserDetails userDetails, ProductRequestDto request) {
+    public ProductResponseDto createProduct(Long userId, ProductRequestDto request) {
 //        log.info("userDetails.getId() " + userDetails.getId());
-        User isAdmin = userService.getUserById(userDetails.getId());
+        User isAdmin = userService.getUserById(userId);
 
 //        userService.isAdmin(userDetails);
         log.info("admin" + isAdmin.getId());

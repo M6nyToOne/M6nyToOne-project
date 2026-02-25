@@ -14,6 +14,7 @@ public class CartResponseDto {
     final private int quantity;
     final private Long userId;
     final private Long productId;
+    final private String productName;
     final private LocalDateTime createdAt;
     final private LocalDateTime updatedAt;
 
@@ -22,6 +23,7 @@ public class CartResponseDto {
         this.quantity = cart.getQuantity();
         this.userId = cart.getUser().getId();
         this.productId = cart.getProduct().getId();
+        this.productName = cart.getProduct().getProductName();
         this.createdAt = cart.getCreatedAt();
         this.updatedAt = cart.getModifiedAt();
     }

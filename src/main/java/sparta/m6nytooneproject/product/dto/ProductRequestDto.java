@@ -4,11 +4,14 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import sparta.m6nytooneproject.product.entity.Category;
 import sparta.m6nytooneproject.product.entity.Status;
 
 @Getter
+@AllArgsConstructor
 public class ProductRequestDto {
 
     @NotBlank(message = "상품명은 필수입니다.")
