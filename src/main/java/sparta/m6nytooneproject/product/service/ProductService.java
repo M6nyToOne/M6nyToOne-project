@@ -3,14 +3,18 @@ package sparta.m6nytooneproject.product.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.exception.product.ProductNotFoundException;
 import sparta.m6nytooneproject.global.exception.product.ProductNotOnSaleException;
 import sparta.m6nytooneproject.product.dto.*;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.entity.Category;
+import sparta.m6nytooneproject.product.entity.ProductSort;
 import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
 import sparta.m6nytooneproject.review.dto.GetRecentReviewsDto;
@@ -38,7 +42,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto createProduct(CustomUserDetails userDetails, ProductRequestDto request) {
-        log.info("userDetails.getId() " + userDetails.getId());
+//        log.info("userDetails.getId() " + userDetails.getId());
         User isAdmin = userService.getUserById(userDetails.getId());
 
 //        userService.isAdmin(userDetails);
@@ -49,7 +53,9 @@ public class ProductService {
         return new ProductResponseDto(savedProduct);
     }
 
-    public Page<ProductResponseDto> getAllProducts(Pageable pageable, String productName, Category category, Status status) {
+    public Page<ProductResponseDto> getAllProducts(int page, int size, ProductSort productSort, String productName, Category category, Status status) {
+
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by(productSort.getProperty()).descending());
 
         if (productName != null && category == null && status == null) {
             // 검색 키워드 상품명 조회
@@ -65,11 +71,11 @@ public class ProductService {
                     .map(ProductResponseDto::new);
         } else if (productName != null && category != null && status == null) {
             // 검색 키워드 상품명 조회와 카테고리 필터
-            return productRepository.findByProductNameAndCategory(productName, category, pageable)
+            return productRepository.findByProductNameContainingAndCategory(productName, category, pageable)
                     .map(ProductResponseDto::new);
         } else if (productName != null && category == null && status != null) {
             // 검색 키워드 상품명 조회와 상품상태 필터
-            return productRepository.findByProductNameAndStatus(productName, status, pageable)
+            return productRepository.findByProductNameContainingAndStatus(productName, status, pageable)
                     .map(ProductResponseDto::new);
         } else if (productName == null && category != null && status != null) {
             // 카테고리 필터와 상품상태 필터
@@ -77,7 +83,7 @@ public class ProductService {
                     .map(ProductResponseDto::new);
         } else if (productName != null && category != null && status != null) {
             // 검색 키워드 상품명 조회와 카테고리 필터와 상품상태 필터
-            return productRepository.findByProductNameAndCategoryAndStatus(productName, category, status, pageable)
+            return productRepository.findByProductNameContainingAndCategoryAndStatus(productName, category, status, pageable)
                     .map(ProductResponseDto::new);
         }
         // 전체 조회
@@ -85,7 +91,9 @@ public class ProductService {
     }
 
     public GetOneProductResponseDto getOneProduct(Long productId) {
+
         Product product = getProductById(productId);
+
         // 평균 평점
         List<Review> reviews = reviewRepository.findAllReviewByProductId(productId);
         if (reviews.isEmpty()) {
@@ -112,7 +120,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProduct(CustomUserDetails userDetails, Long productId, UpdateProductRequestDto request) {
+    public ProductResponseDto updateProduct(Long productId, UpdateProductRequestDto request) {
 //        userService.isAdmin(userDetails);
         Product product = getProductById(productId);
         product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
@@ -120,7 +128,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProductStock(CustomUserDetails userDetails, Long productId, int stock) {
+    public ProductResponseDto updateProductStock(Long productId, int stock) {
 //        userService.isAdmin(userDetails);
 
         Product product = getProductById(productId);
@@ -131,7 +139,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProductStatus(CustomUserDetails userDetails, Long productId, UpdateProductStatusRequestDto request) {
+    public ProductResponseDto updateProductStatus(Long productId, UpdateProductStatusRequestDto request) {
 //        userService.isAdmin(userDetails);
 
         Product product = getProductById(productId);
@@ -169,7 +177,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(CustomUserDetails userDetails, Long productId) {
+    public void deleteProduct(Long productId) {
 //        userService.isAdmin(userDetails);
         Product product = getProductById(productId);
 
