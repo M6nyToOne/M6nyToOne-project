@@ -123,7 +123,7 @@ public class ProductService {
     @Transactional
     public ProductResponseDto updateProduct(Long productId, UpdateProductRequestDto request) {
 //        userService.isAdmin(userDetails);
-        Product product = getProductById(productId);
+        Product product = getProductByIdForLock(productId);
         product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
         return new ProductResponseDto(product);
     }
@@ -132,7 +132,7 @@ public class ProductService {
     public ProductResponseDto updateProductStock(Long productId, int stock) {
 //        userService.isAdmin(userDetails);
 
-        Product product = getProductById(productId);
+        Product product = getProductByIdForLock(productId);
 
         product.updateProductStock(stock);
         setProductStatus(product);
@@ -171,7 +171,7 @@ public class ProductService {
     //입력받은 수량 만큼 감소하는 서비스
     @Transactional
     public void decreaseStock(Long productId, int decrementCount) {
-        Product product = getProductById(productId);
+        Product product = getProductByIdForLock(productId);
 
         int stock = Math.max(product.getStock() - decrementCount, 0);
 
@@ -182,7 +182,7 @@ public class ProductService {
     @Transactional
     public void deleteProduct(Long productId) {
 //        userService.isAdmin(userDetails);
-        Product product = getProductById(productId);
+        Product product = getProductByIdForLock(productId);
 
         product.discontinuedProduct();
         productRepository.saveAndFlush(product);
@@ -191,7 +191,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Product getProductById(Long productId) {
+    public Product getProductByIdForLock(Long productId) {
         try {
             return productRepository.findByIdWithPessimisticLock(productId).orElseThrow(
                     () -> new ProductNotFoundException("존재하지 않는 상품 입니다.")
@@ -201,6 +201,12 @@ public class ProductService {
             throw new RuntimeException("현재 요청이 많습니다. 잠시 후 다시 시도해주세요.");
         }
 
+    }
+
+    public Product getProductById(Long productId) {
+        return productRepository.findById(productId).orElseThrow(
+                () -> new ProductNotFoundException("존재하지 않는 상품 입니다.")
+        );
     }
 
     public Product checkProductStock(Long productId, int quantity){

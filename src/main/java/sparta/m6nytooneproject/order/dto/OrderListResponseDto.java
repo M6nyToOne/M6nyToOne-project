@@ -30,7 +30,7 @@ public class OrderListResponseDto {
                 order.getUserName(),
                 order.getProductName(),
                 order.getQuantity(),
-                order.getProductPrice() * order.getQuantity(),
+                order.getProductPrice(),
                 order.getStatus().getStatus(),
                 order.getCreatedAt(),
                 adminName
