@@ -1,12 +1,230 @@
 package sparta.m6nytooneproject.product.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.LockTimeoutException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import sparta.m6nytooneproject.global.AuthConstants;
+import sparta.m6nytooneproject.global.exception.product.ProductNotFoundException;
+import sparta.m6nytooneproject.global.exception.product.ProductNotOnSaleException;
+import sparta.m6nytooneproject.product.dto.*;
+import sparta.m6nytooneproject.product.entity.Product;
+import sparta.m6nytooneproject.product.entity.Category;
+import sparta.m6nytooneproject.product.entity.ProductSort;
+import sparta.m6nytooneproject.product.entity.Status;
 import sparta.m6nytooneproject.product.repository.ProductRepository;
+import sparta.m6nytooneproject.review.dto.GetRecentReviewsDto;
+import sparta.m6nytooneproject.review.entity.Review;
+import sparta.m6nytooneproject.review.repository.ReviewRepository;
+import sparta.m6nytooneproject.security.CustomUserDetails;
+import sparta.m6nytooneproject.user.entity.User;
+import sparta.m6nytooneproject.user.service.UserService;
+import tools.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProductService {
 
-    private final ProductRepository productrepository;
+    private final ProductRepository productRepository;
+    private final UserService userService;
+    private final ReviewRepository reviewRepository;
+
+    @Transactional
+    public ProductResponseDto createProduct(Long userId, ProductRequestDto request) {
+//        log.info("userDetails.getId() " + userDetails.getId());
+        User isAdmin = userService.getUserById(userId);
+
+//        userService.isAdmin(userDetails);
+        log.info("admin" + isAdmin.getId());
+        Product product = new Product(request.getProductName(), request.getCategory(), request.getPrice(), request.getStock(), request.getStatus(), isAdmin);
+
+        Product savedProduct = productRepository.save(product);
+        return new ProductResponseDto(savedProduct);
+    }
+
+    public Page<ProductResponseDto> getAllProducts(int page, int size, ProductSort productSort, String productName, Category category, Status status) {
+
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by(productSort.getProperty()).descending());
+
+        if (productName != null && category == null && status == null) {
+            // 검색 키워드 상품명 조회
+            return productRepository.findByProductNameContaining(productName, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName == null && category != null && status == null) {
+            // 카테고리 필터
+            return productRepository.findByCategory(category, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName == null && category == null && status != null) {
+            // 상품상태 필터
+            return productRepository.findByStatus(status, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName != null && category != null && status == null) {
+            // 검색 키워드 상품명 조회와 카테고리 필터
+            return productRepository.findByProductNameContainingAndCategory(productName, category, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName != null && category == null && status != null) {
+            // 검색 키워드 상품명 조회와 상품상태 필터
+            return productRepository.findByProductNameContainingAndStatus(productName, status, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName == null && category != null && status != null) {
+            // 카테고리 필터와 상품상태 필터
+            return productRepository.findByCategoryAndStatus(category, status, pageable)
+                    .map(ProductResponseDto::new);
+        } else if (productName != null && category != null && status != null) {
+            // 검색 키워드 상품명 조회와 카테고리 필터와 상품상태 필터
+            return productRepository.findByProductNameContainingAndCategoryAndStatus(productName, category, status, pageable)
+                    .map(ProductResponseDto::new);
+        }
+        // 전체 조회
+        return productRepository.findAll(pageable).map(ProductResponseDto::new);
+    }
+
+    @Transactional
+    public GetOneProductResponseDto getOneProduct(Long productId) {
+
+        Product product = getProductById(productId);
+
+        // 평균 평점
+        List<Review> reviews = reviewRepository.findAllReviewByProductId(productId);
+        if (reviews.isEmpty()) {
+            return new GetOneProductResponseDto(product, null, 0, null, null);
+        }
+        List<Integer> reviewRates = reviews.stream().map(Review::getReviewRate).toList();
+        int sum = reviewRates.stream().mapToInt(Integer::intValue).sum();
+        String averageRate = String.format("%.1f", (double) sum / reviews.size());
+        // 전체 리뷰 개수
+        int reviewCount = reviews.size();
+        // 별점별 개수
+        Map<Integer, Integer> rating = new HashMap<>();
+        rating.put(5, reviewRepository.findRateReviewByProductId(productId, 5).size());
+        rating.put(4, reviewRepository.findRateReviewByProductId(productId, 4).size());
+        rating.put(3, reviewRepository.findRateReviewByProductId(productId, 3).size());
+        rating.put(2, reviewRepository.findRateReviewByProductId(productId, 2).size());
+        rating.put(1, reviewRepository.findRateReviewByProductId(productId, 1).size());
+        ObjectMapper mapper = new ObjectMapper();
+        String ratingCounts = mapper.writeValueAsString(rating);
+        // 최신 리뷰
+        List<Review> recentReviews = reviewRepository.findTop3ByProductIdOrderByCreatedAtDesc(productId);
+        List<GetRecentReviewsDto> dtos = recentReviews.stream().map(GetRecentReviewsDto::new).toList();
+        return new GetOneProductResponseDto(product, averageRate, reviewCount, ratingCounts, dtos);
+    }
+
+    @Transactional
+    public ProductResponseDto updateProduct(Long productId, UpdateProductRequestDto request) {
+//        userService.isAdmin(userDetails);
+        Product product = getProductByIdForLock(productId);
+        product.updateProduct(request.getProductName(), request.getCategory(), request.getPrice());
+        return new ProductResponseDto(product);
+    }
+
+    @Transactional
+    public ProductResponseDto updateProductStock(Long productId, int stock) {
+//        userService.isAdmin(userDetails);
+
+        Product product = getProductByIdForLock(productId);
+
+        product.updateProductStock(stock);
+        setProductStatus(product);
+        return new ProductResponseDto(product);
+    }
+
+    @Transactional
+    public ProductResponseDto updateProductStatus(Long productId, UpdateProductStatusRequestDto request) {
+//        userService.isAdmin(userDetails);
+
+        Product product = getProductById(productId);
+        product.setStatus(request.getStatus());
+        return new ProductResponseDto(product);
+    }
+
+    @Transactional
+    public void setProductStatus(Product product){
+        int stock = product.getStock();
+
+        if(product.getStatus() == Status.DISCONTINUED){
+            return;
+        }
+        if(stock <= 0){
+            product.soldOutProduct();
+            return;
+        }
+        product.onSaleProduct();
+    }
+
+    @Transactional
+    public void increaseStock(Product product, int incrementCount){
+        product.updateProductStock(product.getStock() + incrementCount);
+        setProductStatus(product);
+    }
+
+    //입력받은 수량 만큼 감소하는 서비스
+    @Transactional
+    public void decreaseStock(Long productId, int decrementCount) {
+        Product product = getProductByIdForLock(productId);
+
+        int stock = Math.max(product.getStock() - decrementCount, 0);
+
+        product.updateProductStock(stock);
+        setProductStatus(product);
+    }
+
+    @Transactional
+    public void deleteProduct(Long productId) {
+//        userService.isAdmin(userDetails);
+        Product product = getProductByIdForLock(productId);
+
+        product.discontinuedProduct();
+        productRepository.saveAndFlush(product);
+
+        productRepository.delete(product);
+    }
+
+    @Transactional
+    public Product getProductByIdForLock(Long productId) {
+        try {
+            return productRepository.findByIdWithPessimisticLock(productId).orElseThrow(
+                    () -> new ProductNotFoundException("존재하지 않는 상품 입니다.")
+            );
+        } catch (LockTimeoutException e) {
+            // 락 대기 시간 초과 시 처리
+            throw new RuntimeException("현재 요청이 많습니다. 잠시 후 다시 시도해주세요.");
+        }
+
+    }
+
+    public Product getProductById(Long productId) {
+        return productRepository.findById(productId).orElseThrow(
+                () -> new ProductNotFoundException("존재하지 않는 상품 입니다.")
+        );
+    }
+
+    public Product checkProductStock(Long productId, int quantity){
+        Product product = getProductById(productId);
+        // 재고가 남아도 단종이면 주문 불가?
+        if (product.getStatus() == Status.DISCONTINUED){
+            throw new ProductNotOnSaleException("단종된 상품입니다.");
+        }
+        if (product.getStatus() == Status.SOLD_OUT){
+            throw new ProductNotOnSaleException("품절된 상품입니다.");
+        }
+        if (product.getStock() < quantity){
+            throw new ProductNotOnSaleException("재고가 부족합니다.");
+        }
+        return product;
+    }
 }
+
+
+
+

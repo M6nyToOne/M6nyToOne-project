@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
 import sparta.m6nytooneproject.user.entity.User;
 
@@ -12,33 +14,67 @@ import sparta.m6nytooneproject.user.entity.User;
 @Entity
 @Table(name = "products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SoftDelete(columnName = "deleted")
 public class Product extends BaseEntity {
+
+    private final int SOLD_OUT_VALUE = 0;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long id;
+
     @Column(nullable = false)
     private String productName;
+
     @Column(nullable = false)
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Category category;
+
     @Column(nullable = false)
     private int price;
+
     @Column(nullable = false)
     private int stock;
+
+    @Setter
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user; // 등록관리자
+    @JoinColumn(name = "admin_id", nullable = false)
+    private User admin;
 
-    public Product(String productName, String category, int price, int stock, String status, User user) {
+    public Product(String productName, Category category, int price, int stock, Status status, User admin) {
         this.productName = productName;
         this.category = category;
         this.price = price;
         this.stock = stock;
         this.status = status;
-        this.user = user;
+        this.admin = admin;
+    }
+
+    public void updateProduct(String productName, Category category, Integer price) {
+        this.productName = productName;
+        this.category = category;
+        this.price = price;
+    }
+
+    public void updateProductStock(int stock) {
+        this.stock = stock;
+    }
+
+    public void discontinuedProduct() {
+        this.stock = SOLD_OUT_VALUE;
+        this.status = Status.DISCONTINUED;
+    }
+
+    public void soldOutProduct() {
+        this.stock = SOLD_OUT_VALUE;
+        this.status = Status.SOLD_OUT;
+    }
+
+    public void onSaleProduct() {
+        this.status = Status.ON_SALE;
     }
 }

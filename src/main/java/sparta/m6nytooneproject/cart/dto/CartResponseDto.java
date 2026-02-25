@@ -1,4 +1,30 @@
 package sparta.m6nytooneproject.cart.dto;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import sparta.m6nytooneproject.cart.entity.Cart;
+
+import java.time.LocalDateTime;
+
+@Getter
+@RequiredArgsConstructor
 public class CartResponseDto {
+
+    final private Long id;
+    final private int quantity;
+    final private Long userId;
+    final private Long productId;
+    final private String productName;
+    final private LocalDateTime createdAt;
+    final private LocalDateTime updatedAt;
+
+    public CartResponseDto(Cart cart) {
+        this.id = cart.getId();
+        this.quantity = cart.getQuantity();
+        this.userId = cart.getUser().getId();
+        this.productId = cart.getProduct().getId();
+        this.productName = cart.getProduct().getProductName();
+        this.createdAt = cart.getCreatedAt();
+        this.updatedAt = cart.getModifiedAt();
+    }
 }

@@ -5,20 +5,30 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SoftDelete;
 import sparta.m6nytooneproject.global.entity.BaseEntity;
+import sparta.m6nytooneproject.global.exception.order.OrderStatueNotChangedException;
+import sparta.m6nytooneproject.product.entity.Product;
+import sparta.m6nytooneproject.user.entity.User;
 
+import java.util.UUID;
+
+@Getter
 @Entity
 @Table(name = "orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Getter
+@SoftDelete(columnName = "deleted")
 public class Order extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, updatable = false) // uuid 의 길이 36
+    private UUID orderId;
+
     @Column(nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -28,7 +38,7 @@ public class Order extends BaseEntity {
     private String productName;
 
     @Column(nullable = false)
-    private int productPrice;
+    private Integer productPrice;
 
     @Column
     private String cancelReason;
@@ -36,4 +46,60 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private String userName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private User customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    private User admin;
+
+    public void setCancelOrder(String reason) {
+        this.status = OrderStatus.CANCELLED;
+        this.cancelReason = reason;
+    }
+
+    public void completeOrder() {
+        this.status = OrderStatus.COMPLETED;
+    }
+
+    public void updateOrderStatus() {
+        switch (status) {
+            case PREPARED:
+                this.status = OrderStatus.DELIVERED;
+                break;
+            case DELIVERED:
+                this.status = OrderStatus.COMPLETED;
+                break;
+            default:
+                throw new OrderStatueNotChangedException("주문 상태를 변경 할 수 없습니다");
+        }
+    }
+
+    public Order(int productPrice, int quantity, OrderStatus status, String productName , String userName, Product product , User customer , User admin) {
+        this.productPrice = productPrice;
+        this.orderId = UUID.randomUUID();
+        this.quantity = quantity;
+        this.status = status;
+        this.productName = productName;
+        this.userName = userName;
+        this.product = product;
+        this.customer = customer;
+        this.admin = admin;
+    }
+
+    public Order(int productPrice, int quantity, OrderStatus status, String productName , String userName, Product product , User customer) {
+        this.productPrice = productPrice;
+        this.orderId = UUID.randomUUID();
+        this.quantity = quantity;
+        this.status = status;
+        this.productName = productName;
+        this.userName = userName;
+        this.product = product;
+        this.customer = customer;
+    }
 }
