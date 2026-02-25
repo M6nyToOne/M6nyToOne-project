@@ -15,13 +15,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByStatus(Status status, Pageable pageable);
 
-    Page<Product> findByProductNameAndCategory(String productName, Category category, Pageable pageable);
+    Page<Product> findByProductNameContainingAndCategory(String productName, Category category, Pageable pageable);
 
-    Page<Product> findByProductNameAndStatus(String productName, Status status, Pageable pageable);
+    Page<Product> findByProductNameContainingAndStatus(String productName, Status status, Pageable pageable);
 
     Page<Product> findByCategoryAndStatus(Category category, Status status, Pageable pageable);
 
-    Page<Product> findByProductNameAndCategoryAndStatus(String productName, Category category, Status status, Pageable pageable);
+    Page<Product> findByProductNameContainingAndCategoryAndStatus(String productName, Category category, Status status, Pageable pageable);
 
     // 재고가 5개 이하인 전체 상품 수
     long countByStockLessThanEqual(int stock);
