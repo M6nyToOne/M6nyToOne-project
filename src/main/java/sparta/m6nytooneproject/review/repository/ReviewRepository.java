@@ -20,7 +20,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             AND (:productName IS NULL OR :productName = '' OR r.product.productName = :productName)
             AND (:reviewRate IS NULL OR r.reviewRate = :reviewRate)
             """)
-    Page<Review> searchReview(Pageable pageable, @Param("userName") String userName, @Param("productName") String productName, @Param("reviewRate") int reviewRate);
+    Page<Review> searchReview(Pageable pageable, @Param("userName") String userName, @Param("productName") String productName, @Param("reviewRate") Integer reviewRate);
 
     List<Review> findAllReviewByProductId(Long productId);
 

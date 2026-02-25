@@ -20,7 +20,7 @@ public class Review extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private int reviewRate;
+    private Integer reviewRate;
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

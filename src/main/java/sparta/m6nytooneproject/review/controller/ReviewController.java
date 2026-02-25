@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
+import sparta.m6nytooneproject.order.entity.OrderSort;
 import sparta.m6nytooneproject.review.dto.GetReviewDetailResponseDto;
 import sparta.m6nytooneproject.review.dto.GetReviewListResponseDto;
 import sparta.m6nytooneproject.review.dto.ReviewRequestDto;
@@ -34,13 +35,15 @@ public class ReviewController {
 
     @GetMapping("/reviews")
     public ApiResponseDto<GetReviewListResponseDto> getAllReviews(
-            @PageableDefault Pageable pageable,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "CREATED_AT") OrderSort orderSort,
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) String productName,
-            @RequestParam(required = false) int reviewRate
+            @RequestParam(required = false) Integer reviewRate
     ) {
         return ApiResponseDto.pagination(HttpStatus.OK,
-                reviewService.getAllReviews(pageable, userName, productName, reviewRate) ,"성공적으로 조회하였습니다.");
+                reviewService.getAllReviews(page, size, orderSort, userName, productName, reviewRate) ,"성공적으로 조회하였습니다.");
 
     }
 
