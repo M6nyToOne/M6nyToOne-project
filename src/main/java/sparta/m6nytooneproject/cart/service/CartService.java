@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,7 +68,7 @@ public class CartService {
 
     //페이징 처리 메서드
     public Page<Cart> getCartPageByUserId(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size);
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by("createdAt").descending());
         return cartRepository.findAllByUserId(userId, pageable);
     }
 

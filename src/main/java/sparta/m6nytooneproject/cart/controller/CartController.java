@@ -18,7 +18,6 @@ import sparta.m6nytooneproject.security.CustomUserDetails;
 import java.util.List;
 
 @RestController
-@RequestMapping("/users/{userId}/carts")//공통경로
 @RequiredArgsConstructor
 @Validated
 public class CartController {
@@ -26,7 +25,7 @@ public class CartController {
     private final CartService cartService;
 
     //장바구니 생성
-    @PostMapping
+    @PostMapping("/carts")
     @PreAuthorize("hasRole('CUSTOMER')")
     public ApiResponseDto<CartResponseDto> createCart(
             @Valid @RequestBody CartRequestDto request,
@@ -37,7 +36,8 @@ public class CartController {
     }
 
     //유저id로 전체조회
-    @GetMapping
+    @GetMapping("/users/{userId}/carts")
+    @PreAuthorize("hasAnyRole('SUPER','OPER') or authentication.principal.id == #userId")
     public ApiResponseDto<List<CartResponseDto>> getAllCartsByUserId(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
@@ -48,7 +48,8 @@ public class CartController {
     }
 
     //카트id로 단건조회
-    @GetMapping("/{cartId}")
+    @GetMapping("/carts/{cartId}")
+    @PreAuthorize("hasAnyRole('SUPER','OPER') or @cartSecurity.isSelf(authentication , #cartId)")
     public ApiResponseDto<CartResponseDto> getOneCart(
             @PathVariable Long cartId
     ) {
@@ -56,7 +57,7 @@ public class CartController {
     }
 
     //카트id로 수정
-    @PatchMapping("/{cartId}")
+    @PatchMapping("/carts/{cartId}")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #cartId)")
     public ApiResponseDto<CartResponseDto> updateCart(
             @PathVariable Long cartId,
@@ -67,7 +68,8 @@ public class CartController {
         return ApiResponseDto.success(HttpStatus.OK, result);
     }
 
-    @DeleteMapping("/{cartId}")
+    //카트 삭제
+    @DeleteMapping("/carts/{cartId}")
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #cartId)")
     public ApiResponseDto<CartResponseDto> deleteCart(
             @PathVariable Long cartId,
