@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 public class GetReviewDetailResponseDto {
-    private final int reviewRate;
+    private final Integer reviewRate;
     private final String content;
     private final String productName;
     private final String userName;

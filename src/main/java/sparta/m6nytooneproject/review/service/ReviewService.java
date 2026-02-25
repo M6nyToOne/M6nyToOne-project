@@ -3,15 +3,19 @@ package sparta.m6nytooneproject.review.service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
 import sparta.m6nytooneproject.global.exception.order.OrderNotFoundException;
 import sparta.m6nytooneproject.global.exception.review.AlreadyExistingReviewException;
 import sparta.m6nytooneproject.global.exception.review.ReviewNotFoundException;
 import sparta.m6nytooneproject.global.exception.user.UserNotFoundException;
 import sparta.m6nytooneproject.order.entity.Order;
+import sparta.m6nytooneproject.order.entity.OrderSort;
 import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
 import sparta.m6nytooneproject.review.dto.GetReviewDetailResponseDto;
@@ -22,7 +26,6 @@ import sparta.m6nytooneproject.review.entity.Review;
 import sparta.m6nytooneproject.review.repository.ReviewRepository;
 import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.entity.User;
-import sparta.m6nytooneproject.user.entity.UserRole;
 import sparta.m6nytooneproject.user.repository.UserRepository;
 
 @Service
@@ -51,7 +54,8 @@ public class ReviewService {
         return new ReviewResponseDto(reviewRepository.save(review));
     }
 
-    public Page<GetReviewListResponseDto> getAllReviews(Pageable pageable, String userName, String productName, int reviewRate) {
+    public Page<GetReviewListResponseDto> getAllReviews(int page, int size, OrderSort orderSort, String userName, String productName, Integer reviewRate) {
+        Pageable pageable = PageRequest.of(page + AuthConstants.PAGE_DEFAULT, size, Sort.by(orderSort.getProperty()).descending());
         Page<Review> reviews = reviewRepository.searchReview(pageable, userName, productName, reviewRate);
         return reviews.map(GetReviewListResponseDto::new);
     }
@@ -60,6 +64,7 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId).orElseThrow(
                 () -> new ReviewNotFoundException("존재하지 않는 리뷰입니다.")
         );
+        alreadyDeletedReview(reviewId);
         return new GetReviewDetailResponseDto(review);
     }
 
@@ -67,6 +72,13 @@ public class ReviewService {
         if (!reviewRepository.existsById(reviewId)) {
             throw new ReviewNotFoundException("존재하지 않는 리뷰입니다.");
         }
+        alreadyDeletedReview(reviewId);
         reviewRepository.deleteById(reviewId);
+    }
+
+    public void alreadyDeletedReview(Long reviewId) {
+        if (!reviewRepository.existsById(reviewId)) {
+            throw new ReviewNotFoundException("삭제된 리뷰입니다.");
+        }
     }
 }

@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 public class GetReviewListResponseDto {
     private final Long id;
-    private final int reviewRate;
+    private final Integer reviewRate;
     private final String content;
     private final String customerName;
     private final String productName;

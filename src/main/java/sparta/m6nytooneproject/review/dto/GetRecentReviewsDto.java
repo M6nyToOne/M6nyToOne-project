@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 public class GetRecentReviewsDto {
     private final String userName;
-    private final int reviewRate;
+    private final Integer reviewRate;
     private final String content;
     private final LocalDateTime createAt;
 
