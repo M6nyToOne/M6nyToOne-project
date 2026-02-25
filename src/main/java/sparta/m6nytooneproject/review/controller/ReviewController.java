@@ -15,6 +15,7 @@ import sparta.m6nytooneproject.review.dto.GetReviewDetailResponseDto;
 import sparta.m6nytooneproject.review.dto.GetReviewListResponseDto;
 import sparta.m6nytooneproject.review.dto.ReviewRequestDto;
 import sparta.m6nytooneproject.review.dto.ReviewResponseDto;
+import sparta.m6nytooneproject.review.entity.ReviewSort;
 import sparta.m6nytooneproject.review.service.ReviewService;
 import sparta.m6nytooneproject.security.CustomUserDetails;
 
@@ -37,13 +38,13 @@ public class ReviewController {
     public ApiResponseDto<GetReviewListResponseDto> getAllReviews(
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int size,
-            @RequestParam(required = false, defaultValue = "CREATED_AT") OrderSort orderSort,
+            @RequestParam(required = false, defaultValue = "CREATED_AT") ReviewSort reviewSort,
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) String productName,
             @RequestParam(required = false) Integer reviewRate
     ) {
         return ApiResponseDto.pagination(HttpStatus.OK,
-                reviewService.getAllReviews(page, size, orderSort, userName, productName, reviewRate) ,"성공적으로 조회하였습니다.");
+                reviewService.getAllReviews(page, size, reviewSort, userName, productName, reviewRate) ,"성공적으로 조회하였습니다.");
 
     }
 
