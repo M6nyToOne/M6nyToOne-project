@@ -90,6 +90,7 @@ public class ProductService {
         return productRepository.findAll(pageable).map(ProductResponseDto::new);
     }
 
+    @Transactional
     public GetOneProductResponseDto getOneProduct(Long productId) {
 
         Product product = getProductById(productId);
