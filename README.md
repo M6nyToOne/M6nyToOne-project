@@ -74,7 +74,18 @@
 | **상품 상태 수정** | `PATCH` | `/{productId}/status` | `SUPER`, `OPER` | 판매중/품절/단종 상태 변경 |
 | **상품 삭제** | `DELETE` | `/{productId}` | `SUPER`, `OPER` | **Soft Delete** (단종 처리) |
 
-### 3. 주문 (Order) API
+### 3. 장바구니 (Cart) API
+*(Base URL: `/carts`, `/users`)*
+
+| 기능 | Method | URL | 권한 | 비고 |
+| :--- | :---: | :--- | :--- | :--- |
+| **장바구니 담기** | `POST` | `/carts` | `CUSTOMER` | 상품 장바구니 추가 |
+| **유저별 장바구니 조회** | `GET` | `/users/{userId}/carts` | `SUPER`, `OPER`, `OWNER` | 특정 유저의 장바구니 목록 (페이징) |
+| **장바구니 단건 조회** | `GET` | `/carts/{cartId}` | `SUPER`, `OPER`, `OWNER` | 장바구니 특정 항목 상세 조회 |
+| **장바구니 수정** | `PATCH` | `/carts/{cartId}` | `ADMIN`, `OWNER` | 수량 변경 등 (모든 관리자 가능) |
+| **장바구니 삭제** | `DELETE` | `/carts/{cartId}` | `ADMIN`, `OWNER` | 장바구니 항목 제거 |
+
+### 4. 주문 (Order) API
 *(Base URL: `/orders`)*
 
 | 기능 | Method | URL | 권한 | 비고 |
@@ -87,7 +98,7 @@
 | **주문 상태 변경** | `PATCH` | `/{orderId}/status` | `ADMIN` | 준비중 -> 배송중 -> 완료 |
 | **주문 취소** | `DELETE` | `/{orderId}/cancel` | `AUTH` | 준비중 상태에서만 가능 |
 
-### 4. 리뷰 (Review) API
+### 5. 리뷰 (Review) API
 *(Base URL: `/reviews`, `/orders`)*
 
 | 기능 | Method | URL | 권한 | 비고 |
@@ -97,7 +108,7 @@
 | **리뷰 상세 조회** | `GET` | `/reviews/{reviewId}` | `ALL` | - |
 | **리뷰 삭제** | `DELETE` | `/reviews/{reviewId}` | `ADMIN` | 부적절한 리뷰 관리자 삭제 |
 
-### 5. 대시보드 (Dashboard) API
+### 6. 대시보드 (Dashboard) API
 *(Base URL: `/boards`)*
 
 | 기능 | Method | URL | 권한 | 비고 |
