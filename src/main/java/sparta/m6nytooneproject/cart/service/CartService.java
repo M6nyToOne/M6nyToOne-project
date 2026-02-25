@@ -1,6 +1,5 @@
 package sparta.m6nytooneproject.cart.service;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -8,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
 import sparta.m6nytooneproject.cart.dto.CartUpdateRequestDto;
@@ -42,7 +40,7 @@ public class CartService {
 
     //장바구니 생성
     @Transactional
-    public CartResponseDto createCart(@Valid @RequestBody CartRequestDto request,CustomUserDetails userDetails) {
+    public CartResponseDto createCart(CartRequestDto request,CustomUserDetails userDetails) {
         // 1. 유저 존재 여부 확인
         User user = userService.getUserById(userDetails.getId());
         //1-1. 유저 상태 체크 로직추가
