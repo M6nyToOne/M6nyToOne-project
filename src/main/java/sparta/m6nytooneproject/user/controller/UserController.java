@@ -278,7 +278,7 @@ public class UserController {
     @PreAuthorize("hasAnyRole('SUPER') or @userSecurity.isOwner(authentication, #userId)")
     public ApiResponseDto<UpdateCustomerInfoResponseDto> updateCustomerInfo(
         @PathVariable Long userId,
-        @RequestBody UpdateUserInfoRequestDto request
+        @Valid @RequestBody UpdateUserInfoRequestDto request
     ) {
         return ApiResponseDto.success(HttpStatus.OK ,userService.updateCustomer(userId, request));
     }

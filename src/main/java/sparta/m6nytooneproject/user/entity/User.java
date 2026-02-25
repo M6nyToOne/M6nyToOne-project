@@ -70,7 +70,7 @@ public class User extends BaseEntity {
         if (userName != null && !userName.isBlank()) {
             this.userName =userName;
         }
-        if (email != null & !email.isBlank()) {
+        if (email != null && !email.isBlank()) {
             this.email = email;
         }
         if (phoneNumber != null && !phoneNumber.isBlank()) {
