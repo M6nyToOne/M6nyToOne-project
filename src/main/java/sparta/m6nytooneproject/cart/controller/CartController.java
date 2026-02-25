@@ -25,7 +25,7 @@ public class CartController {
     private final CartService cartService;
 
     //장바구니 생성
-    @PostMapping
+    @PostMapping("/carts")
     @PreAuthorize("hasRole('CUSTOMER')")
     public ApiResponseDto<CartResponseDto> createCart(
             @Valid @RequestBody CartRequestDto request,
