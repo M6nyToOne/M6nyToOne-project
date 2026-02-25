@@ -24,11 +24,11 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false, length = 36) // uuid 의 길이 36
+    @Column(nullable = false, unique = true, updatable = false) // uuid 의 길이 36
     private UUID orderId;
 
     @Column(nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -38,7 +38,7 @@ public class Order extends BaseEntity {
     private String productName;
 
     @Column(nullable = false)
-    private int productPrice;
+    private Integer productPrice;
 
     @Column
     private String cancelReason;
