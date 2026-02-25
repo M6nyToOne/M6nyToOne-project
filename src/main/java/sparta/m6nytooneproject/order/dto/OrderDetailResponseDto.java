@@ -13,8 +13,8 @@ public class OrderDetailResponseDto {
     private final String orderId;
     private final String productName;
     private final String category;
-    private final int price;
-    private final int quantity;
+    private final Integer price;
+    private final Integer quantity;
     private final String orderStatus;
     private final String customerName;
     private final String customerEmail;

@@ -10,12 +10,11 @@ import java.time.LocalDateTime;
 @Getter
 @RequiredArgsConstructor
 public class OrderListResponseDto {
-    private final Long Id;
-    private final String orderId;
+    private final String orderId; // -> uuid
     private final String customerName;
     private final String productName;
-    private final int quantity;
-    private final int price;
+    private final Integer quantity;
+    private final Integer price;
     private final String orderStatus;
     private final LocalDateTime createdAt;
     //cs 주문시 관리자 이름
@@ -27,7 +26,6 @@ public class OrderListResponseDto {
         String adminName = (admin != null) ? admin.getUserName() : null;
 
         return new OrderListResponseDto(
-                order.getId(),
                 order.getOrderId().toString(),
                 order.getUserName(),
                 order.getProductName(),

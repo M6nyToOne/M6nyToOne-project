@@ -25,10 +25,11 @@ import sparta.m6nytooneproject.order.entity.OrderStatus;
 import sparta.m6nytooneproject.order.repository.OrderRepository;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.service.ProductService;
-import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.entity.UserRole;
 import sparta.m6nytooneproject.user.service.UserService;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,7 @@ public class OrderService {
         Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
 
         Order order = new Order(
-                validProduct.getPrice(),
+                validProduct.getPrice() * request.getQuantity(),
                 request.getQuantity(),
                 OrderStatus.PREPARED,
                 validProduct.getProductName(),
@@ -55,7 +56,7 @@ public class OrderService {
                 customer
         );
         orderRepository.save(order);
-        productService.decreaseStock(validProduct, request.getQuantity());
+        productService.decreaseStock(validProduct.getId(), request.getQuantity());
         cartService.deleteCart(cartId, customerId);
 
         return OrderDetailResponseDto.from(order);
@@ -71,7 +72,7 @@ public class OrderService {
         Product validProduct = productService.checkProductStock(request.getProductId() , request.getQuantity());
 
         Order order = new Order(
-                validProduct.getPrice(),
+                validProduct.getPrice() * request.getQuantity(),
                 request.getQuantity(),
                 OrderStatus.PREPARED,
                 validProduct.getProductName(),
@@ -81,12 +82,12 @@ public class OrderService {
                 admin
         );
         orderRepository.save(order);
-        productService.decreaseStock(validProduct, request.getQuantity());
+        productService.decreaseStock(validProduct.getId(), request.getQuantity());
         return OrderDetailResponseDto.from(order);
     }
 
     @Transactional
-    public void cancelOrder(Long orderId, String cancelReason) {
+    public void cancelOrder(UUID orderId, String cancelReason) {
         Order order = getOrderById(orderId);
 
         if(!order.getStatus().equals(OrderStatus.PREPARED)) {
@@ -105,7 +106,7 @@ public class OrderService {
         }
     }
 
-    public OrderDetailResponseDto getOneOrder(Long orderId) {
+    public OrderDetailResponseDto getOneOrder(UUID orderId) {
         Order order = getOrderById(orderId);
         return OrderDetailResponseDto.from(order);
     }
@@ -125,21 +126,21 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDetailResponseDto completeOrder(Long orderId) {
+    public OrderDetailResponseDto completeOrder(UUID orderId) {
         Order order = getOrderById(orderId);
         order.completeOrder();
         return OrderDetailResponseDto.from(order);
     }
 
     @Transactional
-    public OrderDetailResponseDto updateOrderStatus(Long orderId) {
+    public OrderDetailResponseDto updateOrderStatus(UUID orderId) {
         Order order = getOrderById(orderId);
         order.updateOrderStatus();
         return OrderDetailResponseDto.from(order);
     }
 
-    public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId).orElseThrow(
+    public Order getOrderById(UUID orderId) {
+        return orderRepository.findByOrderId(orderId).orElseThrow(
                 () -> new OrderNotFoundException("존재하지 않는 주문입니다.")
         );
     }

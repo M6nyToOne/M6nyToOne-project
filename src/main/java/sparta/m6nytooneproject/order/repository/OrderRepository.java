@@ -12,6 +12,7 @@ import sparta.m6nytooneproject.order.entity.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("""
@@ -60,4 +61,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     long countByStatus(OrderStatus orderStatus);
 
     List<Order> findTop10ByOrderByCreatedAtDesc();
+
+    Optional<Order> findByOrderId(UUID orderId);
 }
