@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import sparta.m6nytooneproject.security.CustomUserDetails;
 import sparta.m6nytooneproject.user.entity.User;
@@ -21,6 +22,21 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        String method = request.getMethod();
+
+        if (pathMatcher.match("/users/login", path)) return true;
+        if (pathMatcher.match("/users/signup", path)) return true;
+        if (pathMatcher.match("/swagger-ui/**", path)) return true;
+        if (pathMatcher.match("/v3/api-docs/**", path)) return true;
+
+        // OPTIONS preflight 제외(프론트 CORS)
+        return "OPTIONS".equalsIgnoreCase(method);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
