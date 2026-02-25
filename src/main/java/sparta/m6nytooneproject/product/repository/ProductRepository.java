@@ -1,11 +1,18 @@
 package sparta.m6nytooneproject.product.repository;
 
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import sparta.m6nytooneproject.product.entity.Product;
 import sparta.m6nytooneproject.product.entity.Category;
 import sparta.m6nytooneproject.product.entity.Status;
+
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
@@ -29,5 +36,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     long countByStatus(Status status);
 
     int countByCategory(Category category);
+
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")) // 3초
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.id = :id")
+    Optional<Product> findByIdWithPessimisticLock(Long id);
 }
 

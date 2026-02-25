@@ -2,6 +2,7 @@ package sparta.m6nytooneproject.product.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.LockTimeoutException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,6 @@ import sparta.m6nytooneproject.user.entity.User;
 import sparta.m6nytooneproject.user.service.UserService;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +161,9 @@ public class ProductService {
 
     //입력받은 수량 만큼 감소하는 서비스
     @Transactional
-    public void decreaseStock(Product product, int decrementCount) {
+    public void decreaseStock(Long productId, int decrementCount) {
+        Product product = getProductById(productId);
+
         int stock = Math.max(product.getStock() - decrementCount, 0);
 
         product.updateProductStock(stock);
@@ -179,10 +181,17 @@ public class ProductService {
         productRepository.delete(product);
     }
 
+    @Transactional
     public Product getProductById(Long productId) {
-        return productRepository.findById(productId).orElseThrow(
-                () -> new ProductNotFoundException("존재하지 않는 상품 입니다.")
-        );
+        try {
+            return productRepository.findByIdWithPessimisticLock(productId).orElseThrow(
+                    () -> new ProductNotFoundException("존재하지 않는 상품 입니다.")
+            );
+        } catch (LockTimeoutException e) {
+            // 락 대기 시간 초과 시 처리
+            throw new RuntimeException("현재 요청이 많습니다. 잠시 후 다시 시도해주세요.");
+        }
+
     }
 
     public Product checkProductStock(Long productId, int quantity){
