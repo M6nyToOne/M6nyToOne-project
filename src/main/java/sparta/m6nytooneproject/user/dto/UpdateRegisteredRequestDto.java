@@ -1,10 +1,11 @@
 package sparta.m6nytooneproject.user.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import sparta.m6nytooneproject.user.entity.UserRole;
 
 @Getter
 public class UpdateRegisteredRequestDto {
 
-    private UserRole userRole;
+    @NotNull(message = "변경할 역할을 입력해주세요.")
+    private String userRole;
 }

@@ -154,13 +154,19 @@ public class UserService {
     public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto request) {
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
-        if (request.getUserRole() == null) {
-            throw new IllegalStateException("변경할 역할을 입력해주세요.");
+        if (request.getUserRole() == null || request.getUserRole().isEmpty()) {
+            throw new MissingUserRoleException("변경할 역할을 입력해주세요.");
         }
-        if (request.getUserRole().equals(user.getRole())) {
-            throw new AlreadySameRoleException("이미 해당 역할입니다.");
+        try {
+            UserRole newRole = UserRole.valueOf(request.getUserRole().toUpperCase());
+            if (newRole.equals(user.getRole())) {
+                throw new AlreadySameRoleException("이미 해당 역할입니다.");
+            }
+            user.updateUserRole(newRole);
+        } catch (IllegalArgumentException e) {
+            // 혹시나 "ABC" 같은 이상한 값이 들어왔을 때를 위한 안전장치라네.
+            throw new MissingUserRoleException("존재하지 않는 역할입니다.");
         }
-        user.updateUserRole(request.getUserRole());
         return new UpdateRegisteredUserResponseDto(user);
     }
 
