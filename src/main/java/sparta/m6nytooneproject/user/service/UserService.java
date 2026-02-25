@@ -78,7 +78,7 @@ public class UserService {
                 requestDto.getUserRole()
         );
         User savedUser = userRepository.save(user);
-        if (requestDto.getUserRole().equals(UserRole.CUSTOMER) || requestDto.getUserRole().equals(UserRole.SUPER_ADMIN)) {
+        if (requestDto.getUserRole().equals(UserRole.CUSTOMER)) {
             savedUser.setSignupStatus(SignupStatus.ACTIVE);
             return new UserResponseDto(savedUser);
         }
@@ -103,9 +103,13 @@ public class UserService {
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
         // 슈퍼 관리자가 승인대기 상태를 활성/거부 상태로 업데이트
-        // 거부 사유가 null이 아니면 거부 상태로 변경
         String reason = request.getRejectMessage();
-        if (reason != null && !reason.isBlank()) {
+        // 승인인데 거부 메시지 입력시 에러 발생
+        if (request.getSignupStatus().equals(SignupStatus.ACTIVE) && (reason != null && !reason.isBlank())) {
+            throw new IllegalStateException("승인 시에는 거부 메시지를 입력할 수 없습니다.");
+        }
+        // 거부 사유가 null이 아니면 거부 상태로 변경
+        if (reason != null && request.getSignupStatus().equals(SignupStatus.REJECTED)) {
             user.reject(reason);
         } else {
             // null이라면 활성 상태로 변경
@@ -132,6 +136,7 @@ public class UserService {
     }
 
     // 등록된 관리자 정보 수정
+    // TODO: 기존값 변경값 같은지
     @Transactional
     public UpdateUserInfoResponseDto updateUserInfo(Long userId, UpdateUserInfoRequestDto request) {
         User user = getUserById(userId);
@@ -149,6 +154,9 @@ public class UserService {
     public UpdateRegisteredUserResponseDto updateRegisteredUser(Long userId, UpdateRegisteredRequestDto request) {
         User user = getUserById(userId);
         validateIsAdmin(user.getRole());
+        if (request.getUserRole() == null) {
+            throw new IllegalStateException("변경할 역할을 입력해주세요.");
+        }
         if (request.getUserRole().equals(user.getRole())) {
             throw new AlreadySameRoleException("이미 해당 역할입니다.");
         }
@@ -179,6 +187,7 @@ public class UserService {
     }
 
     // 내 프로필 수정 (관리자 자신의 이름, 이메일, 전화번호), 비번이 일치해야 수정할 수 있게.
+    // TODO: 기존값 변경값 같은 지
     @Transactional
     public UpdateUserInfoResponseDto updateMyInfo(Long userId, UpdateUserInfoRequestDto request) {
         User user = getUserById(userId);
@@ -285,9 +294,10 @@ public class UserService {
     }
 
     //삭제, 수정 등 작업을 요청할때 요청한 유저와 그것을 작성한 유저가 동일한지 확인하는 서비스
-    public void validateRequesterIsOwner(Long requesterId, Long ownerId){
-        if(!requesterId.equals(ownerId)){
-            throw new UnAuthorizedException("권한이 없습니다.");
-        }
-    }
+    // -> rbac 하면서 비활성
+//    public void validateRequesterIsOwner(Long requesterId, Long ownerId){
+//        if(!requesterId.equals(ownerId)){
+//            throw new UnAuthorizedException("권한이 없습니다.");
+//        }
+//    }
 }
