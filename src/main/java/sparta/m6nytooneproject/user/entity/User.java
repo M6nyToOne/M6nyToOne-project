@@ -67,9 +67,15 @@ public class User extends BaseEntity {
 
     // 관리자 정보 수정 메서드
     public void updateUserInfo(String userName, String email, String phoneNumber) {
-        this.userName =userName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
+        if (userName != null && !userName.isBlank()) {
+            this.userName =userName;
+        }
+        if (email != null & !email.isBlank()) {
+            this.email = email;
+        }
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            this.phoneNumber = phoneNumber;
+        }
     }
 
     // 관리자 비밀번호 변경 메서드

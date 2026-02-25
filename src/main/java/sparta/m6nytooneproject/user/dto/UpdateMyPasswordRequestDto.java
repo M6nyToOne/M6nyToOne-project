@@ -1,14 +1,13 @@
 package sparta.m6nytooneproject.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
 public class UpdateMyPasswordRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "현재 비밀번호를 입력해주세요.")
     private String currentPassword;
 
     @NotBlank
