@@ -39,7 +39,7 @@ public class OrderDetailResponseDto {
                 order.getOrderId().toString(),
                 order.getProductName(),
                 order.getProduct().getCategory().getCategory(),
-                order.getQuantity() * order.getProductPrice(),
+                order.getProductPrice(),
                 order.getQuantity(),
                 order.getStatus().getStatus(),
                 order.getUserName(),
