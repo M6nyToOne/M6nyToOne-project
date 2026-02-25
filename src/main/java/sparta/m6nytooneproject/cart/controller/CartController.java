@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
+import sparta.m6nytooneproject.cart.dto.CartUpdateRequestDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.cart.service.CartService;
 import sparta.m6nytooneproject.global.dto.ApiResponseDto;
@@ -61,7 +62,7 @@ public class CartController {
     @PreAuthorize("hasAnyRole('SUPER','OPER','MARKET','CS') or @cartSecurity.isSelf(authentication , #cartId)")
     public ApiResponseDto<CartResponseDto> updateCart(
             @PathVariable Long cartId,
-            @Valid @RequestBody CartRequestDto request,
+            @Valid @RequestBody CartUpdateRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         CartResponseDto result = cartService.updateCart(cartId, request, userDetails.getId());

@@ -11,10 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import sparta.m6nytooneproject.cart.dto.CartRequestDto;
 import sparta.m6nytooneproject.cart.dto.CartResponseDto;
+import sparta.m6nytooneproject.cart.dto.CartUpdateRequestDto;
 import sparta.m6nytooneproject.cart.entity.Cart;
 import sparta.m6nytooneproject.cart.repository.CartRepository;
 import sparta.m6nytooneproject.global.AuthConstants;
 import sparta.m6nytooneproject.global.exception.cart.CartNotFoundException;
+import sparta.m6nytooneproject.global.exception.cart.OutOfStockException;
 import sparta.m6nytooneproject.global.exception.common.SessionNotActiveException;
 import sparta.m6nytooneproject.global.exception.common.UnAuthorizedException;
 import sparta.m6nytooneproject.global.exception.product.ProductNotOnSaleException;
@@ -53,10 +55,21 @@ public class CartService {
         }
         // 3. 기존 장바구니에 동일 상품이 있는지 확인
         Optional<Cart> existingCart = cartRepository.findByUserAndProduct(user, product);
+
+        //상품 재고 체크 : 기존 장바구니에 해당 상품이 있는지 확인하고, 있으면 수량을 가져오고 없으면 0을 반환
+        int currentCartQuantity = existingCart.map(Cart::getQuantity).orElse(0);
+        //기존 수량에 사용자가 새로 추가하려는 수량을 더하여 총수량 생성
+        int totalRequestedQuantity = currentCartQuantity + request.getQuantity();
+
+        //총수량과 상품재고 비교
+        if (totalRequestedQuantity > product.getStock()) {
+            throw new OutOfStockException("상품의 재고가 부족합니다. (현재 재고: " + product.getStock() + "개)");
+        }
+
         // 3-1. 동일 상품이 있으면 수량만 증가
         if(existingCart.isPresent()){
             Cart cart = existingCart.get();
-            cart.updateQuantity(cart.getQuantity() + request.getQuantity());
+            cart.updateQuantity(totalRequestedQuantity);
             return new CartResponseDto(cart);
         }else {
             // 4. 다른 상품인 경우 새로운 장바구니 생성
@@ -84,13 +97,21 @@ public class CartService {
         Cart cart = getCartById(cartId);
         return new CartResponseDto(cart);
     }
+
     @Transactional
     //카트id로 수정(로그인한 본인이 만든 카트인지확인필요)
-    public CartResponseDto updateCart(Long cartId, CartRequestDto request, Long loginUserId) {
+    public CartResponseDto updateCart(Long cartId, CartUpdateRequestDto request, Long loginUserId) {
+
         //해당id의 카트가 존재하는지 확인
         Cart cart = getCartById(cartId);
         //요청한 카트를 만든 유저id와 로그인한 유저id비교
         checkUserAuth(cart, loginUserId);
+
+        // 수정하려는 수량이 상품의 전체 재고를 초과하는지 체크
+        if (request.getQuantity() > cart.getProduct().getStock()) {
+            throw new OutOfStockException("상품의 재고가 부족합니다. (현재 재고: " + cart.getProduct().getStock() + "개)");
+        }
+
         cart.updateQuantity(request.getQuantity());
         return new CartResponseDto(cart);
     }
